@@ -2,10 +2,13 @@ TEMPLATE = app
 TARGET = VATATS
 
 QT = core gui
+QT += webchannel webenginewidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-SOURCES += src/main.cpp
+HEADERS += src/PathProvider.h
+SOURCES += src/main.cpp src/PathProvider.cpp
+RESOURCES += resources.qrc
 
 INCLUDEPATH += include
 
