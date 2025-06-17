@@ -15,9 +15,12 @@
 #include "PathProvider.h"
 #include <QWebEngineSettings>
 #include <random>
+#include "savePoints.h"
+#include <QDateTime>
 
 HANDLE hSimConnect = nullptr;
 QVector<QPair<double,double>> aircraftPts;
+QString saveName = QString("save%1.sqlite").arg(QDateTime::currentDateTime().toString("yyyyMMddHHmmss"));
 
 struct AircraftPosition{ //Struct to store position info of the aircraft
     double latitude;
@@ -31,11 +34,13 @@ AircraftPosition currentAircraftPosition;
 //It translates the received data, so that it can extract the position info
 //Also checks if the id matches the id of the request
 void CALLBACK getAircraftLocation(SIMCONNECT_RECV* pData, DWORD, void*){
+    savePoints savePointsInstance;
     if(pData->dwID == SIMCONNECT_RECV_ID_SIMOBJECT_DATA){
         SIMCONNECT_RECV_SIMOBJECT_DATA* pObjData = (SIMCONNECT_RECV_SIMOBJECT_DATA*)pData;
         if(pObjData->dwRequestID == 0){
             currentAircraftPosition = *(AircraftPosition*)&pObjData->dwData;
             aircraftPts.push_back({currentAircraftPosition.latitude,currentAircraftPosition.longitude});
+            savePointsInstance.sendPointsToSQL(saveName, currentAircraftPosition.latitude, currentAircraftPosition.longitude, currentAircraftPosition.altitude);
         }
     }
 }
