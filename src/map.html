@@ -24,8 +24,9 @@
         </style>
     </head>
     <body>
-        <div id="map" style="width: 800px; height: 400px;"></div>
+        <div id="map" style="width: 1200px; height: 1200px;"></div>
         <script>
+            var map = L.map('map').setView([0,0],19)
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
                 maxZoom: 19,
                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
