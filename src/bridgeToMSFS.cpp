@@ -6,6 +6,10 @@
 #include <windows.h>
 #include <SimConnect.h>
 #include <iostream>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QFile>
 #include "ui_tracking.h"
 #include "tracking.h"
 #include "PathProvider.h"
@@ -48,6 +52,24 @@ void bridgeToMSFS::requestAircraftLocation(HANDLE hSimConnect){
 bool bridgeToMSFS::ConnectToMSFS(){
     if(SUCCEEDED(SimConnect_Open(&hSimConnect, "VATATS", nullptr, 0, 0, 0))){
         std::cout << "connected" << std::endl;
+        {
+            QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "saveindex_connection");
+            db.setDatabaseName("saves.sqlite");
+            if(!db.open()){
+                qWarning() << "Cannot open database: " << db.lastError().text();
+            }
+            QSqlQuery query(db);
+            if(!query.exec("CREATE TABLE IF NOT EXISTS saves (id INTEGER PRIMARY KEY AUTOINCREMENT, saveName TEXT)")){
+                qWarning() << "Create table failed: " << query.lastError().text();
+            }
+            query.prepare("INSERT INTO saves (saveName) VALUES (?)");
+            query.addBindValue(saveName);
+            if(!query.exec()){
+                qWarning() << "Insert failed: " << query.lastError().text();
+            }
+            db.close();
+        }
+        QSqlDatabase::removeDatabase("saveindex_connection");
         return true;
     }
     else{
