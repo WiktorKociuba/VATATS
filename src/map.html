@@ -24,9 +24,10 @@
         </style>
     </head>
     <body>
-        <div id="map" style="width: 1200px; height: 1200px;"></div>
+        <div id="map" style="width: 441px; height: 301px;"></div>
         <script>
             var map = L.map('map').setView([0,0],19)
+            window.mapCentered = false;
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
                 maxZoom: 19,
                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -43,9 +44,17 @@
                 function drawPath() {
                     pathProvider.getPath().then(function(latlngs) {
                         latlngs = toPairs(latlngs);
+                        if(latlngs.length == 0 && window.polyline) {
+                            map.removeLayer(window.polyline);
+                            window.polyline = null;
+                        }
                         if (latlngs.length < 2) return;
                         if (window.polyline) map.removeLayer(window.polyline);
                         window.polyline = L.polyline(latlngs, {color: 'red', smoothFactor: 2.0}).addTo(map);
+                        if(!window.mapCentered && latlngs.length > 0) {
+                            map.setView(latlngs[0], 15);
+                            window.mapCentered = true;
+                        }
                     });
                 }
                 drawPath();

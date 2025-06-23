@@ -32,3 +32,27 @@ QVector<std::tuple<double,double,double>> readPoints::readPointsDB(QString saveN
     QSqlDatabase::removeDatabase("readPoints_connection");
     return points;
 }
+
+QString readPoints::getLastSaveName(){
+    QString lastName;
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "getlastsave_connection");
+        db.setDatabaseName("saves.sqlite");
+        if(!db.open()){
+            qWarning() << "Cannot open database: " << db.lastError().text();
+            return lastName;
+        }
+        QSqlQuery query(db);
+        if(query.exec("SELECT saveName FROM saves ORDER BY id DESC LIMIT 1")){
+            if(query.next()){
+                lastName = query.value(0).toString();
+            }
+        }
+        else{
+            qWarning() << "Select failed: " << query.lastError().text();
+        }
+        db.close();
+        QSqlDatabase::removeDatabase("getlastsave_connection");
+        return lastName;
+    }
+}

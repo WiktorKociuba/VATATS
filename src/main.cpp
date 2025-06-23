@@ -1,8 +1,12 @@
 #include <QApplication>
-#include "flightTrackingPage.h"
+#include <QObject>
+#include "globals.h"
+
+tracking* g_mainWindow = nullptr;
 
 int main(int argc, char** argv){
     QApplication app(argc,argv);
-    flightTrackingPage::startTracking();
+    g_mainWindow = new tracking();
+    g_mainWindow->show();
     return app.exec();
 }

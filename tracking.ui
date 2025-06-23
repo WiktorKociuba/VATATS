@@ -19,25 +19,6 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QWidget" name="mapWidget" native="true">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>100</x>
-     <y>50</y>
-     <width>351</width>
-     <height>331</height>
-    </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-  </widget>
   <widget class="QFrame" name="frame">
    <property name="geometry">
     <rect>
@@ -68,7 +49,7 @@
    <property name="lineWidth">
     <number>0</number>
    </property>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="flightTrackingPB">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -81,7 +62,7 @@
      <string>Flight Tracking</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="chartsPB">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -97,7 +78,7 @@
      <string>Charts</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_3">
+   <widget class="QPushButton" name="flightradarPB">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -110,7 +91,7 @@
      <string>Flightradar</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_4">
+   <widget class="QPushButton" name="simbriefPB">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -120,9 +101,98 @@
      </rect>
     </property>
     <property name="text">
-     <string>Flightradar</string>
+     <string>Simbrief</string>
     </property>
    </widget>
+  </widget>
+  <widget class="QStackedWidget" name="stackedWidget">
+   <property name="geometry">
+    <rect>
+     <x>99</x>
+     <y>9</y>
+     <width>481</width>
+     <height>331</height>
+    </rect>
+   </property>
+   <widget class="QWidget" name="page">
+    <widget class="QWidget" name="mapWidget" native="true">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>70</y>
+       <width>441</width>
+       <height>301</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="startTrackingPB">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>40</y>
+       <width>80</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Start Tracking</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="showLastPB">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>40</y>
+       <width>101</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Show Last Flight</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="stopTrackingPB">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>40</y>
+       <width>80</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Stop Tracking</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="clearMapPB">
+     <property name="geometry">
+      <rect>
+       <x>390</x>
+       <y>40</y>
+       <width>80</width>
+       <height>18</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Clear Map</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="page_2"/>
+   <widget class="QWidget" name="page_3"/>
+   <widget class="QWidget" name="page_4"/>
   </widget>
  </widget>
  <resources/>
