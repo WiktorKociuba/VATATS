@@ -1,11 +1,19 @@
+#define NOMINMAX
 #include "tracking.h"
 #include "ui_tracking.h"
 #include <QWebEngineView>
 #include "src/flightTrackingPage.h"
 #include "src/globals.h"
 #include "src/readPoints.h"
+#include "src/bridgeToMSFS.h"
 #include <tuple>
 #include <QLayout>
+#include <QtCharts/QChartView>
+#include <QtCharts/QChart>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QValueAxis>
+
+QString saveNameChosen = nullptr;
 
 tracking::tracking(QWidget *parent)
     : QWidget(parent)
@@ -25,11 +33,22 @@ tracking::tracking(QWidget *parent)
 
     webChannel = new QWebChannel(mapView->page());
     pathProvider = new PathProvider;
-    webChannel-> registerObject("pathProvider", pathProvider);
+    webChannel->registerObject("pathProvider", pathProvider);
     mapView->page()->setWebChannel(webChannel);
 
     trackingTimer = new QTimer(this);
 
+    //heightChart
+
+    QChartView* chartView = new QChartView(new QChart(), ui->heightChart);
+    chartView->setRenderHint(QPainter::Antialiasing);
+    if(!ui->heightChart->layout()){
+        QVBoxLayout* layout = new QVBoxLayout(ui->heightChart);
+        layout->setContentsMargins(0,0,0,0);
+        ui->heightChart->setLayout(layout);
+    }
+    ui->heightChart->layout()->addWidget(chartView);
+    this->heightChartView = chartView;
     //navbar
     connect(ui->flightTrackingPB, &QPushButton::clicked, this, &tracking::onFlightTrackingClicked);
     connect(ui->chartsPB, &QPushButton::clicked, this, &tracking::onChartsClicked);
@@ -42,6 +61,8 @@ tracking::tracking(QWidget *parent)
     connect(ui->showLastPB, &QPushButton::clicked, this, &tracking::onShowLastClicked);
     connect(ui->stopTrackingPB, &QPushButton::clicked, this, &tracking::onStopTrackingClicked);
     connect(ui->clearMapPB, &QPushButton::clicked, this, &tracking::onClearMapClicked);
+    connect(ui->chooseSaveDD, &QComboBox::currentTextChanged, this, &tracking::onSaveDDChanged);
+    connect(this, &tracking::landingDataUpdated, this, &tracking::updateLandingDataDisplay);
 }
 
 tracking::~tracking()
@@ -51,6 +72,7 @@ tracking::~tracking()
 
 void tracking::onFlightTrackingClicked(){
     ui->stackedWidget->setCurrentIndex(0);
+    tracking::populateSaveDD();
 }
 
 void tracking::onChartsClicked(){
@@ -66,27 +88,71 @@ void tracking::onSimbriefClicked(){
 }
 
 void tracking::onShowLastClicked(){
-    QVector<std::tuple<double,double,double>> points = readPoints::readPointsDB(readPoints::getLastSaveName());
+    QVector<std::tuple<double,double,double>> points = readPoints::readPointsDB(saveNameChosen);
     QVector<QPair<double,double>> result;
+    QVector<double> altitude;
     for(int i = 0; i < points.size(); i++){
         result.push_back({std::get<0>(points[i]),std::get<1>(points[i])});
+        altitude.push_back(std::get<2>(points[i]));
     }
     flightTrackingPage::displayPastRoute(result);
+    tracking::showHeightProfile(altitude);
 }
 
 void tracking::onStartTrackingClicked(){
     ui->startTrackingPB->setEnabled(false);
     ui->stopTrackingPB->setEnabled(true);
+    ui->showLastPB->setEnabled(false);
+    initialized = false;
+    wasOnGround = TRUE;
     flightTrackingPage::startTracking(g_mainWindow);
 }
 
 void tracking::onStopTrackingClicked(){
     ui->stopTrackingPB->setEnabled(false);
+    ui->showLastPB->setEnabled(true);
     ui->startTrackingPB->setEnabled(true);
     if(trackingTimer->isActive())
         trackingTimer->stop();
+    tracking::populateSaveDD();
 }
 
 void tracking::onClearMapClicked(){
     g_mainWindow->pathProvider->setPoints({});
+    tracking::showHeightProfile({});
+    ui->landingSpeedLabel->setText("");
+}
+
+void tracking::populateSaveDD(){
+    ui->chooseSaveDD->clear();
+    QVector<QString> saveNames = readPoints::getLastSaveName();
+    for(int i = 0; i < saveNames.size(); i++){
+        ui->chooseSaveDD->addItem(saveNames[i]);
+    }
+}
+
+void tracking::onSaveDDChanged(const QString& saveName){
+    saveNameChosen = saveName;
+}
+void tracking::showHeightProfile(const QVector<double>& heightData){
+    QChart* chart = heightChartView->chart();
+    chart->removeAllSeries();
+    QLineSeries *series = new QLineSeries();
+    int idx = 0;
+    for(int i = 0; i < heightData.size(); i++){
+        series->append(idx++,heightData[i]);
+    }
+    chart->addSeries(series);
+    chart->createDefaultAxes();
+    QAbstractAxis* axisX = chart->axes(Qt::Horizontal).first();
+    axisX->setLabelsVisible(false);
+    chart->axes(Qt::Vertical).first()->setTitleText("Altitude (ft)");
+    chart->legend()->hide();
+}
+
+void tracking::updateLandingDataDisplay(){
+    QString text = QString("Landing vertical speed: %1 ft/min, G-force: %2 G")
+        .arg(bridgeToMSFS::currentLandingForce.verticalSpeed, 0, 'f', 2)
+        .arg(bridgeToMSFS::currentLandingForce.gForce, 0, 'f', 2);
+    ui->landingSpeedLabel->setText(text);
 }

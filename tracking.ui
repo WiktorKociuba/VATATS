@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>588</width>
-    <height>393</height>
+    <width>1200</width>
+    <height>800</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,7 +25,7 @@
      <x>-10</x>
      <y>-10</y>
      <width>101</width>
-     <height>411</height>
+     <height>811</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -110,8 +110,8 @@
     <rect>
      <x>99</x>
      <y>9</y>
-     <width>481</width>
-     <height>331</height>
+     <width>1091</width>
+     <height>781</height>
     </rect>
    </property>
    <widget class="QWidget" name="page">
@@ -123,8 +123,8 @@
       <rect>
        <x>30</x>
        <y>70</y>
-       <width>441</width>
-       <height>301</height>
+       <width>961</width>
+       <height>381</height>
       </rect>
      </property>
      <property name="sizePolicy">
@@ -150,7 +150,7 @@
     <widget class="QPushButton" name="showLastPB">
      <property name="geometry">
       <rect>
-       <x>230</x>
+       <x>490</x>
        <y>40</y>
        <width>101</width>
        <height>18</height>
@@ -179,7 +179,7 @@
     <widget class="QPushButton" name="clearMapPB">
      <property name="geometry">
       <rect>
-       <x>390</x>
+       <x>910</x>
        <y>40</y>
        <width>80</width>
        <height>18</height>
@@ -187,6 +187,39 @@
      </property>
      <property name="text">
       <string>Clear Map</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="chooseSaveDD">
+     <property name="geometry">
+      <rect>
+       <x>330</x>
+       <y>40</y>
+       <width>141</width>
+       <height>22</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QWidget" name="heightChart" native="true">
+     <property name="geometry">
+      <rect>
+       <x>29</x>
+       <y>460</y>
+       <width>961</width>
+       <height>171</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="landingSpeedLabel">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>660</y>
+       <width>301</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </widget>

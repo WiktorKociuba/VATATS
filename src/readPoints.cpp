@@ -33,8 +33,8 @@ QVector<std::tuple<double,double,double>> readPoints::readPointsDB(QString saveN
     return points;
 }
 
-QString readPoints::getLastSaveName(){
-    QString lastName;
+QVector<QString> readPoints::getLastSaveName(){
+    QVector<QString> lastName;
     {
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "getlastsave_connection");
         db.setDatabaseName("saves.sqlite");
@@ -43,9 +43,9 @@ QString readPoints::getLastSaveName(){
             return lastName;
         }
         QSqlQuery query(db);
-        if(query.exec("SELECT saveName FROM saves ORDER BY id DESC LIMIT 1")){
-            if(query.next()){
-                lastName = query.value(0).toString();
+        if(query.exec("SELECT saveName FROM saves ORDER BY id DESC")){
+            while(query.next()){
+                lastName.push_back(query.value(0).toString());
             }
         }
         else{

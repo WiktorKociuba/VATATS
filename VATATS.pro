@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = VATATS
 
 QT = core gui
-QT += webchannel webenginewidgets sql
+QT += webchannel webenginewidgets sql charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
