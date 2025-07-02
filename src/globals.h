@@ -6,3 +6,4 @@
 extern tracking* g_mainWindow;
 static BOOL wasOnGround;
 static bool initialized;
+static bool ifConnected;

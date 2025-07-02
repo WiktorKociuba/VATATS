@@ -36,4 +36,5 @@ public:
     static void CALLBACK getAircraftLocation(SIMCONNECT_RECV* pData, DWORD, void*);
     void requestAircraftLocation(HANDLE hSimConnect);
     bool ConnectToMSFS();
+    void closeConnection();
 };

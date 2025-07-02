@@ -27,6 +27,7 @@ public:
     void populateSaveDD();
     QChartView* heightChartView = nullptr;
     void showHeightProfile(const QVector<double>& heightData);
+    void displayDuration(int duration);
 public slots:
     void updateLandingDataDisplay();
 private slots:

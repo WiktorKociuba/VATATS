@@ -5,6 +5,7 @@
 #include <QSqlError>
 #include <QFile>
 #include <tuple>
+#include "bridgeToMSFS.h"
 
 QVector<std::tuple<double,double,double>> readPoints::readPointsDB(QString saveName){
     QVector<std::tuple<double,double,double>> points;
@@ -54,5 +55,33 @@ QVector<QString> readPoints::getLastSaveName(){
         db.close();
         QSqlDatabase::removeDatabase("getlastsave_connection");
         return lastName;
+    }
+}
+
+int readPoints::getFlightTime(){
+    QVector<int> times;
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "flighttime_connection");
+        db.setDatabaseName(bridgeToMSFS::saveName);
+        if(!db.open()){
+            qWarning() << "Cannot open the database: " << db.lastError().text();
+        }
+        QSqlQuery query(db);
+        if(query.exec("SELECT time FROM startTimes ORDER BY id")){
+            while(query.next()){
+                times.push_back(query.value(0).toInt());
+            }
+        }
+        else{
+            qWarning() << "Select failed: " << query.lastError().text();
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("flighttime_connection");
+    if(times.size() > 1){
+        return times[1]-times[0];
+    }
+    else{
+        return -1;
     }
 }

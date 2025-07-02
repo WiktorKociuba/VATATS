@@ -12,9 +12,12 @@
 #include <QTimer>
 #include "flightTrackingPage.h"
 #include "globals.h"
+#include "savePoints.h"
 
 void flightTrackingPage::startTracking(tracking* trackingWindow){
     bridgeToMSFS bridgeToMSFSInstance;
+    savePoints::createNewSave();
+    
     for(int i = 0; !bridgeToMSFSInstance.ConnectToMSFS() && i < 5; i++){
         Sleep(5000);
     }
@@ -31,7 +34,11 @@ void flightTrackingPage::startTracking(tracking* trackingWindow){
         bool onGround = (bridgeToMSFS::currentSimData.touchdownState != 0);
         trackingWindow->pathProvider->setPoints(bridgeToMSFSInstance.aircraftPts);
         trackingWindow->showHeightProfile(bridgeToMSFS::altitudeData);
+        if(wasOnGround && !onGround){
+            savePoints::saveTakeoffTime();
+        }
         if(!wasOnGround && onGround){
+            savePoints::saveLandingTime();
             bridgeToMSFS::currentLandingForce.gForce = bridgeToMSFS::currentSimData.gForce;
             bridgeToMSFS::currentLandingForce.verticalSpeed = bridgeToMSFS::currentSimData.verticalSpeed;
             QMetaObject::invokeMethod(g_mainWindow, "updateLandingDataDisplay", Qt::QueuedConnection);
@@ -39,6 +46,7 @@ void flightTrackingPage::startTracking(tracking* trackingWindow){
         wasOnGround = onGround;
     });
     trackingWindow->trackingTimer->start(2000);
+    bridgeToMSFSInstance.closeConnection();
 }
 
 void flightTrackingPage::displayPastRoute(QVector<QPair<double,double>> points){

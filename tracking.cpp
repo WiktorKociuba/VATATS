@@ -114,6 +114,7 @@ void tracking::onStopTrackingClicked(){
     ui->startTrackingPB->setEnabled(true);
     if(trackingTimer->isActive())
         trackingTimer->stop();
+    tracking::displayDuration(readPoints::getFlightTime());
     tracking::populateSaveDD();
 }
 
@@ -155,4 +156,11 @@ void tracking::updateLandingDataDisplay(){
         .arg(bridgeToMSFS::currentLandingForce.verticalSpeed, 0, 'f', 2)
         .arg(bridgeToMSFS::currentLandingForce.gForce, 0, 'f', 2);
     ui->landingSpeedLabel->setText(text);
+}
+
+void tracking::displayDuration(int duration){
+    QString text = QString("Time of the flight: %1:%2")
+        .arg((duration/60)/60)
+        .arg((duration/60)%60);
+    ui->durationLabel->setText(text);
 }
