@@ -8,4 +8,5 @@ public:
     static void createNewSave();
     static void saveTakeoffTime();
     static void saveLandingTime();
+    static void removeLastPoint(const QString& dbFile);
 };

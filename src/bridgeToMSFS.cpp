@@ -17,7 +17,7 @@
 #include "savePoints.h"
 #include "bridgeToMSFS.h"
 #include "globals.h"
-
+#include "ui_tracking.h"
 
 HANDLE bridgeToMSFS::hSimConnect = nullptr;
 QVector<QPair<double,double>> bridgeToMSFS::aircraftPts;
@@ -31,7 +31,6 @@ bridgeToMSFS::simData bridgeToMSFS::currentSimData;
 //It translates the received data, so that it can extract the position info
 //Also checks if the id matches the id of the request
 void CALLBACK bridgeToMSFS::getAircraftLocation(SIMCONNECT_RECV* pData, DWORD, void*){
-    savePoints savePointsInstance;
     if(pData->dwID == SIMCONNECT_RECV_ID_SIMOBJECT_DATA){
         SIMCONNECT_RECV_SIMOBJECT_DATA* pObjData = (SIMCONNECT_RECV_SIMOBJECT_DATA*)pData;
         if(pObjData->dwRequestID == 0){
@@ -39,15 +38,14 @@ void CALLBACK bridgeToMSFS::getAircraftLocation(SIMCONNECT_RECV* pData, DWORD, v
             currentAircraftPosition.latitude = currentSimData.latitude;
             currentAircraftPosition.longitude = currentSimData.longitude;
             currentAircraftPosition.altitude = currentSimData.altitude;
-            aircraftPts.push_back({currentAircraftPosition.latitude,currentAircraftPosition.longitude});
-            savePointsInstance.sendPointsToSQL(saveName, currentAircraftPosition.latitude, currentAircraftPosition.longitude, currentAircraftPosition.altitude);
-            altitudeData.push_back(currentAircraftPosition.altitude);
-            
+            QMetaObject::invokeMethod(qApp, [](){
+                emit g_bridgeToMSFSInstance->SimDataUpdated();
+            }, Qt::QueuedConnection);
         }
     }
 }
 
-void bridgeToMSFS::requestAircraftLocation(HANDLE hSimConnect){
+void bridgeToMSFS::requestAircraftLocation(HANDLE hSimConnect, SIMCONNECT_PERIOD period){
     HRESULT hr;
     //Add the msfs variables to a client object definition
     hr = SimConnect_AddToDataDefinition(hSimConnect, 0, "PLANE LATITUDE", "degrees");
@@ -55,9 +53,10 @@ void bridgeToMSFS::requestAircraftLocation(HANDLE hSimConnect){
     hr = SimConnect_AddToDataDefinition(hSimConnect, 0, "PLANE ALTITUDE", "feet");
     hr = SimConnect_AddToDataDefinition(hSimConnect, 0, "VERTICAL SPEED", "feet per minute");
     hr = SimConnect_AddToDataDefinition(hSimConnect, 0, "G FORCE", "GForce");
-    hr = SimConnect_AddToDataDefinition(hSimConnect, 0, "TOUCHDOWN STATE", "number");
+    hr = SimConnect_AddToDataDefinition(hSimConnect, 0, "SIM ON GROUND", "Bool");
+    hr = SimConnect_AddToDataDefinition(hSimConnect, 0, "PLANE ALT ABOVE GROUND", "feet");
     //Request the data
-    hr = SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_SECOND);
+    hr = SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER, period);
 }
 
 //Connect to the simulator with SimConnect

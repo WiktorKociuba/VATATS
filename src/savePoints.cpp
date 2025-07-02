@@ -93,3 +93,31 @@ void savePoints::saveLandingTime(){
     }
     QSqlDatabase::removeDatabase("landingtime_connection");
 }
+
+void savePoints::removeLastPoint(const QString& dbFile){
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "removePoint_connection");
+        db.setDatabaseName(dbFile);
+        if(!db.open()){
+            qWarning() << "Cannot open database: " << db.lastError().text();
+            return;
+        }
+        QSqlQuery query(db);
+        if(query.exec("SELECT id FROM points ORDER BY id DESC LIMIT 1")){
+            if(query.next()){
+                int lastId = query.value(0).toInt();
+                QSqlQuery delQuery(db);
+                delQuery.prepare("DELETE FROM points WHERE id = ?");
+                delQuery.addBindValue(lastId);
+                if(!delQuery.exec()){
+                    qWarning() << "Delete failed: " << delQuery.lastError().text();
+                }
+            }
+            else{
+                qWarning() << "Select failed: " << query.lastError().text();
+            }
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("removePoints_connection");
+}

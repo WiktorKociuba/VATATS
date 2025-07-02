@@ -112,8 +112,8 @@ void tracking::onStopTrackingClicked(){
     ui->stopTrackingPB->setEnabled(false);
     ui->showLastPB->setEnabled(true);
     ui->startTrackingPB->setEnabled(true);
-    if(trackingTimer->isActive())
-        trackingTimer->stop();
+    trackingTimer->stop();
+    bridgeToMSFS::closeConnection();
     tracking::displayDuration(readPoints::getFlightTime());
     tracking::populateSaveDD();
 }

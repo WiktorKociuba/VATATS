@@ -15,25 +15,49 @@
 #include "savePoints.h"
 
 void flightTrackingPage::startTracking(tracking* trackingWindow){
-    bridgeToMSFS bridgeToMSFSInstance;
     savePoints::createNewSave();
     
-    for(int i = 0; !bridgeToMSFSInstance.ConnectToMSFS() && i < 5; i++){
+    for(int i = 0; !g_bridgeToMSFSInstance->ConnectToMSFS() && i < 5; i++){
         Sleep(5000);
     }
-    bridgeToMSFSInstance.requestAircraftLocation(bridgeToMSFSInstance.hSimConnect);
-
-    if(trackingWindow->trackingTimer->isActive())
-        trackingWindow->trackingTimer->stop();
-    
-    trackingWindow->trackingTimer->disconnect();
+    g_bridgeToMSFSInstance->requestAircraftLocation(g_bridgeToMSFSInstance->hSimConnect, SIMCONNECT_PERIOD_SECOND);
     wasOnGround = TRUE;
-    
-    QObject::connect(trackingWindow->trackingTimer, &QTimer::timeout, [trackingWindow, &bridgeToMSFSInstance](){
-        SimConnect_CallDispatch(bridgeToMSFSInstance.hSimConnect, bridgeToMSFS::getAircraftLocation, nullptr);
-        bool onGround = (bridgeToMSFS::currentSimData.touchdownState != 0);
-        trackingWindow->pathProvider->setPoints(bridgeToMSFSInstance.aircraftPts);
-        trackingWindow->showHeightProfile(bridgeToMSFS::altitudeData);
+    static bool nearGround = false;
+
+    QObject::connect(trackingWindow->trackingTimer, &QTimer::timeout, [](){
+        SimConnect_CallDispatch(g_bridgeToMSFSInstance->hSimConnect, bridgeToMSFS::getAircraftLocation, nullptr);
+    });
+    trackingWindow->trackingTimer->start(1000);
+
+    QObject::connect(g_bridgeToMSFSInstance, &bridgeToMSFS::SimDataUpdated, [trackingWindow](){
+        qDebug() << "called";
+        savePoints savePointsInstance;
+        static QElapsedTimer saveTimer;
+        static bool timerStarted = false;
+        if(!timerStarted){
+            saveTimer.start();
+            timerStarted = true;
+        }
+        bool onGround = bridgeToMSFS::currentSimData.simOnGround;
+        double altAboveGround = bridgeToMSFS::currentSimData.altAboveGround;
+        if(!onGround && altAboveGround < 10.0 && !nearGround){
+            g_bridgeToMSFSInstance->requestAircraftLocation(g_bridgeToMSFSInstance->hSimConnect, SIMCONNECT_PERIOD_SIM_FRAME);
+            nearGround = true;
+            trackingWindow->trackingTimer->setInterval(50);
+        }
+        else if((onGround || altAboveGround >=10.0) && nearGround){
+            g_bridgeToMSFSInstance->requestAircraftLocation(g_bridgeToMSFSInstance->hSimConnect, SIMCONNECT_PERIOD_SECOND);
+            nearGround = false;
+            trackingWindow->trackingTimer->setInterval(1000);
+        }
+        if(saveTimer.elapsed() >= 900){
+            bridgeToMSFS::aircraftPts.push_back({bridgeToMSFS::currentAircraftPosition.latitude,bridgeToMSFS::currentAircraftPosition.longitude});
+            savePointsInstance.sendPointsToSQL(bridgeToMSFS::saveName, bridgeToMSFS::currentAircraftPosition.latitude, bridgeToMSFS::currentAircraftPosition.longitude, bridgeToMSFS::currentAircraftPosition.altitude);
+            bridgeToMSFS::altitudeData.push_back(bridgeToMSFS::currentAircraftPosition.altitude);
+            trackingWindow->pathProvider->setPoints(g_bridgeToMSFSInstance->aircraftPts);
+            trackingWindow->showHeightProfile(bridgeToMSFS::altitudeData);
+            saveTimer.restart();
+        }
         if(wasOnGround && !onGround){
             savePoints::saveTakeoffTime();
         }
@@ -45,8 +69,7 @@ void flightTrackingPage::startTracking(tracking* trackingWindow){
         }
         wasOnGround = onGround;
     });
-    trackingWindow->trackingTimer->start(2000);
-    bridgeToMSFSInstance.closeConnection();
+    
 }
 
 void flightTrackingPage::displayPastRoute(QVector<QPair<double,double>> points){
@@ -56,4 +79,8 @@ void flightTrackingPage::displayPastRoute(QVector<QPair<double,double>> points){
         trackingWindow->trackingTimer->stop();
 
     trackingWindow->pathProvider->setPoints(points);
+}
+
+void flightTrackingPage::returnToSavedPosition(QString saveName){
+
 }

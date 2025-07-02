@@ -28,13 +28,16 @@ public:
         double altitude;
         double verticalSpeed;
         double gForce;
-        uint32_t touchdownState;
+        double simOnGround;
+        double altAboveGround;
     };
     static AircraftPosition currentAircraftPosition;
     static LandingForce currentLandingForce;
     static simData currentSimData; 
     static void CALLBACK getAircraftLocation(SIMCONNECT_RECV* pData, DWORD, void*);
-    void requestAircraftLocation(HANDLE hSimConnect);
+    void requestAircraftLocation(HANDLE hSimConnect, SIMCONNECT_PERIOD period);
     bool ConnectToMSFS();
-    void closeConnection();
+    static void closeConnection();
+signals:
+    void SimDataUpdated();
 };
