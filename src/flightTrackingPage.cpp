@@ -27,7 +27,7 @@ void flightTrackingPage::startTracking(tracking* trackingWindow){
     QObject::connect(trackingWindow->trackingTimer, &QTimer::timeout, [](){
         SimConnect_CallDispatch(g_bridgeToMSFSInstance->hSimConnect, bridgeToMSFS::getAircraftLocation, nullptr);
     });
-    trackingWindow->trackingTimer->start(1000);
+    trackingWindow->trackingTimer->start(5000);
 
     QObject::connect(g_bridgeToMSFSInstance, &bridgeToMSFS::SimDataUpdated, [trackingWindow](){
         qDebug() << "called";
@@ -44,13 +44,16 @@ void flightTrackingPage::startTracking(tracking* trackingWindow){
             g_bridgeToMSFSInstance->requestAircraftLocation(g_bridgeToMSFSInstance->hSimConnect, SIMCONNECT_PERIOD_SIM_FRAME);
             nearGround = true;
             trackingWindow->trackingTimer->setInterval(50);
+            trackingWindow->trackingTimer->start();
         }
         else if((onGround || altAboveGround >=10.0) && nearGround){
             g_bridgeToMSFSInstance->requestAircraftLocation(g_bridgeToMSFSInstance->hSimConnect, SIMCONNECT_PERIOD_SECOND);
             nearGround = false;
-            trackingWindow->trackingTimer->setInterval(1000);
+            trackingWindow->trackingTimer->setInterval(5000);
+            trackingWindow->trackingTimer->start();
         }
-        if(saveTimer.elapsed() >= 900){
+        if(saveTimer.elapsed() >= 4900){
+            savePoints::savePointsTime();
             bridgeToMSFS::aircraftPts.push_back({bridgeToMSFS::currentAircraftPosition.latitude,bridgeToMSFS::currentAircraftPosition.longitude});
             savePointsInstance.sendPointsToSQL(bridgeToMSFS::saveName, bridgeToMSFS::currentAircraftPosition.latitude, bridgeToMSFS::currentAircraftPosition.longitude, bridgeToMSFS::currentAircraftPosition.altitude);
             bridgeToMSFS::altitudeData.push_back(bridgeToMSFS::currentAircraftPosition.altitude);

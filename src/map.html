@@ -21,6 +21,10 @@
                 width: 100vw;
                 height: 100vw;
             }
+            .leaflet-tooltip {
+                z-index: 10000;
+                pointer-events: auto;
+            }
         </style>
     </head>
     <body>
@@ -42,15 +46,33 @@
                     return clatlngs;
                 }
                 function drawPath() {
-                    pathProvider.getPath().then(function(latlngs) {
+                    Promise.all([
+                        pathProvider.getPath(),
+                        pathProvider.getPointTimes(),
+                        pathProvider.getAltitude()
+                    ]).then(function([latlngs,times,altitude]) {
                         latlngs = toPairs(latlngs);
-                        if(latlngs.length == 0 && window.polyline) {
-                            map.removeLayer(window.polyline);
+                        if (window.polyline) map.removeLayer(window.polyline);
+                        if (window.pointMarkers) {
+                            window.pointMarkers.forEach(function(marker) { map.removeLayer(marker); });
+                        }
+                        window.pointMarkers = [];
+                        if(latlngs.length == 0) {
                             window.polyline = null;
+                            return;
                         }
                         if (latlngs.length < 2) return;
-                        if (window.polyline) map.removeLayer(window.polyline);
                         window.polyline = L.polyline(latlngs, {color: 'red', smoothFactor: 2.0}).addTo(map);
+                        
+                        latlngs.forEach(function(latlng, i) {
+                            var marker = L.circleMarker(latlng, {radius: 1, color: 'blue', fillOpacity: 1}).addTo(map);
+                            if(true) {
+                                var date = new Date(times[i] * 1000);
+                                marker.bindTooltip("Time: " + date.toLocaleString() + "<br>Altitude: " + altitude[i].toFixed(0) + "ft", {permanent: false, direction: "top"});
+                            }
+                            window.pointMarkers.push(marker);
+                        });
+                        
                         if(!window.mapCentered && latlngs.length > 0) {
                             map.setView(latlngs[0], 15);
                             window.mapCentered = true;

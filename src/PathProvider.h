@@ -8,6 +8,8 @@ class PathProvider : public QObject {
 public:
     explicit PathProvider(QObject *parent = nullptr) : QObject(parent) {}
     Q_INVOKABLE QVariantList getPath() const;
+    Q_INVOKABLE QVariantList getPointTimes() const;
+    Q_INVOKABLE QVariantList getAltitude() const;
     void setPoints(const QVector<QPair<double,double>>& pts);
 signals:
     void pathChanged();

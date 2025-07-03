@@ -85,3 +85,26 @@ int readPoints::getFlightTime(){
         return -1;
     }
 }
+
+QVector<int> readPoints::getPointsTime(){
+    QVector<int> res;
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "getPointsTime_connection");
+        db.setDatabaseName(bridgeToMSFS::saveName);
+        if(!db.open()){
+            qWarning() << "Cannot open database: " << db.lastError().text();
+        }
+        QSqlQuery query;
+        if(query.exec("SELECT time FROM times ORDER BY id")){
+            while(query.next()){
+                res.push_back(query.value(0).toInt());
+            }
+        }
+        else{
+            qWarning() << "Query failed: " << query.lastError().text();
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("getPointsTime_connection");
+    return res;
+}

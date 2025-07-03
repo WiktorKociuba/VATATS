@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include "bridgeToMSFS.h"
 #include <ctime>
+#include "globals.h"
 
 void savePoints::sendPointsToSQL(const QString& dbFile, double latitude, double longitude, double altitude){
     {
@@ -120,4 +121,27 @@ void savePoints::removeLastPoint(const QString& dbFile){
         db.close();
     }
     QSqlDatabase::removeDatabase("removePoints_connection");
+}
+
+void savePoints::savePointsTime(){
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "savePointsTime_connection");
+        db.setDatabaseName(bridgeToMSFS::saveName);
+        if(!db.open()){
+            qWarning() << "Cannot open database" << db.lastError().text();
+        }
+        QSqlQuery query(db);
+        if(!query.exec("CREATE TABLE IF NOT EXISTS times (id INTEGER PRIMARY KEY AUTOINCREMENT, time INTEGER)")){
+            qWarning() << "Cannot create table" << query.lastError().text();
+        }
+        query.prepare("INSERT INTO times (time) VALUES (?)");
+        query.addBindValue(std::time(nullptr));
+        pointTimes.push_back(std::time(nullptr));
+        qDebug() << pointTimes.size();
+        if(!query.exec()){
+            qWarning() << "Cannot insert time: " << query.lastError().text();
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("savePointsTime_connection");
 }

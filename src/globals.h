@@ -9,3 +9,4 @@ static BOOL wasOnGround;
 static bool initialized;
 static bool ifConnected;
 extern bridgeToMSFS* g_bridgeToMSFSInstance;
+extern QVector<int> pointTimes;
