@@ -14,6 +14,7 @@
 #include <QtCharts/QValueAxis>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QFile>
 
 QString saveNameChosen = nullptr;
 
@@ -197,4 +198,23 @@ void tracking::onSaveSimConfClicked(){
         "</SimBase.Document>\n"
     ).arg(ip,port);
     ui->SimConfOut->setPlainText(xml);
+    ui->SimConfOut->setEnabled(true);
+    QString cfg = QString(
+        "[SimConnect]\n"
+        "Protocol=IPv4\n"
+        "Address=%1\n"
+        "Port=%2\n"
+    ).arg(ip,port);
+    QFile file("SimConnect.cfg");
+    if(QFile::exists("SimConnect.cfg")){
+        QFile::remove("SimConnect.cfg");
+    }
+    if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QTextStream out(&file);
+        out << cfg;
+        file.close();
+    }
+    else{
+        QMessageBox::warning(this,"Error","Could not write SimConnect.cfg!");
+    }
 }
