@@ -40,6 +40,8 @@ private slots:
     void onStopTrackingClicked();
     void onClearMapClicked();
     void onSaveDDChanged(const QString& saveName);
+    void onSettingsClicked();
+    void onSaveSimConfClicked();
 signals:
     void landingDataUpdated();
 };

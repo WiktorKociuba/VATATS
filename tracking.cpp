@@ -12,6 +12,8 @@
 #include <QtCharts/QChart>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
+#include <QTextStream>
+#include <QMessageBox>
 
 QString saveNameChosen = nullptr;
 
@@ -54,7 +56,7 @@ tracking::tracking(QWidget *parent)
     connect(ui->chartsPB, &QPushButton::clicked, this, &tracking::onChartsClicked);
     connect(ui->flightradarPB, &QPushButton::pressed, this, &tracking::onFlightradarClicked);
     connect(ui->simbriefPB, &QPushButton::clicked, this, &tracking::onSimbriefClicked);
-
+    connect(ui->settings, &QPushButton::clicked, this, &tracking::onSettingsClicked);
 
     //page 1
     connect(ui->startTrackingPB, &QPushButton::clicked, this, &tracking::onStartTrackingClicked);
@@ -63,6 +65,9 @@ tracking::tracking(QWidget *parent)
     connect(ui->clearMapPB, &QPushButton::clicked, this, &tracking::onClearMapClicked);
     connect(ui->chooseSaveDD, &QComboBox::currentTextChanged, this, &tracking::onSaveDDChanged);
     connect(this, &tracking::landingDataUpdated, this, &tracking::updateLandingDataDisplay);
+
+    //settings
+    connect(ui->saveSimConf, &QPushButton::clicked, this, &tracking::onSaveSimConfClicked);
 }
 
 tracking::~tracking()
@@ -85,6 +90,10 @@ void tracking::onFlightradarClicked(){
 
 void tracking::onSimbriefClicked(){
     ui->stackedWidget->setCurrentIndex(3);
+}
+
+void tracking::onSettingsClicked(){
+    ui->stackedWidget->setCurrentIndex(4);
 }
 
 void tracking::onShowLastClicked(){
@@ -163,4 +172,29 @@ void tracking::displayDuration(int duration){
         .arg((duration/60)/60)
         .arg((duration/60)%60);
     ui->durationLabel->setText(text);
+}
+
+void tracking::onSaveSimConfClicked(){
+    QString ip = ui->ipLineEdit->text().trimmed();
+    QString port = ui->portLineEdit->text().trimmed();
+    if(ip.isEmpty())
+        ip = "0.0.0.0";
+    if(port.isEmpty())
+        port = "500";
+    QString xml = QString(
+        "<SimBase.Document Type=\"SimConnect\" version=\"1,0\">\n"
+        "   <SimConnect.Comm>\n"
+        "       <Comm>\n"
+        "           <Protocol>IPv4</Protocol>\n"
+        "           <Scope>global</Scope>\n"
+        "           <Address>%1</Address>\n"
+        "           <Port>%2</Port>\n"
+        "           <MaxClients>64</MaxClients>\n"
+        "           <MaxRecvSize>4096</MaxRecvSize>\n"
+        "           <DisableNagle>False</DisableNagle>\n"
+        "       </Comm>\n"
+        "   </SimConnect.Comm>\n"
+        "</SimBase.Document>\n"
+    ).arg(ip,port);
+    ui->SimConfOut->setPlainText(xml);
 }
