@@ -3,6 +3,8 @@
     "files.associations": {
         "tuple": "cpp",
         "qvboxlayout": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "qwebchannel": "cpp",
+        "span": "cpp"
     }
 }
