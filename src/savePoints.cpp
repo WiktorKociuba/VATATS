@@ -145,3 +145,5 @@ void savePoints::savePointsTime(){
     }
     QSqlDatabase::removeDatabase("savePointsTime_connection");
 }
+
+//void savePoints::saveSettings

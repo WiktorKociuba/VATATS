@@ -10,3 +10,5 @@ static bool initialized;
 static bool ifConnected;
 extern bridgeToMSFS* g_bridgeToMSFSInstance;
 extern QVector<int> pointTimes;
+extern QString g_callsign;
+extern QString g_hoppieSecret;

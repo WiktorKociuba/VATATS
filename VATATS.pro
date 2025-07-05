@@ -6,9 +6,9 @@ QT += webchannel webenginewidgets sql charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-HEADERS += src/PathProvider.h src/flightTrackingPage.h src/bridgeToMSFS.h src/savePoints.h src/savePoints.h src/readPoints.h src/globals.h \
+HEADERS += src/PathProvider.h src/flightTrackingPage.h src/bridgeToMSFS.h src/savePoints.h src/savePoints.h src/readPoints.h src/globals.h src/cpdlc.h \
     tracking.h
-SOURCES += src/main.cpp src/PathProvider.cpp src/flightTrackingPage.cpp src/bridgeToMSFS.cpp src/savePoints.cpp src/savePoints.cpp src/readpoints.cpp \
+SOURCES += src/main.cpp src/PathProvider.cpp src/flightTrackingPage.cpp src/bridgeToMSFS.cpp src/savePoints.cpp src/savePoints.cpp src/readpoints.cpp src/cpdlc.cpp \
     tracking.cpp
 RESOURCES += resources.qrc
 
