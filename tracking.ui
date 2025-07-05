@@ -78,7 +78,7 @@
      <string>Charts</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="flightradarPB">
+   <widget class="QPushButton" name="CPDLCPB">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -88,7 +88,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Flightradar</string>
+     <string>CPDLC</string>
     </property>
    </widget>
    <widget class="QPushButton" name="simbriefPB">

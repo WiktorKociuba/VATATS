@@ -55,7 +55,7 @@ tracking::tracking(QWidget *parent)
     //navbar
     connect(ui->flightTrackingPB, &QPushButton::clicked, this, &tracking::onFlightTrackingClicked);
     connect(ui->chartsPB, &QPushButton::clicked, this, &tracking::onChartsClicked);
-    connect(ui->flightradarPB, &QPushButton::pressed, this, &tracking::onFlightradarClicked);
+    connect(ui->CPDLCPB, &QPushButton::pressed, this, &tracking::onCPDLCClicked);
     connect(ui->simbriefPB, &QPushButton::clicked, this, &tracking::onSimbriefClicked);
     connect(ui->settings, &QPushButton::clicked, this, &tracking::onSettingsClicked);
 
@@ -85,7 +85,7 @@ void tracking::onChartsClicked(){
     ui->stackedWidget->setCurrentIndex(1);
 }
 
-void tracking::onFlightradarClicked(){
+void tracking::onCPDLCClicked(){
     ui->stackedWidget->setCurrentIndex(2);
 }
 

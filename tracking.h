@@ -33,7 +33,7 @@ public slots:
 private slots:
     void onFlightTrackingClicked();  
     void onChartsClicked();
-    void onFlightradarClicked();
+    void onCPDLCClicked();
     void onSimbriefClicked();
     void onStartTrackingClicked();
     void onShowLastClicked();  
