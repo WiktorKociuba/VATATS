@@ -90,7 +90,7 @@ void cpdlc::pollMessages(QString secret, QString callsign){
                     QString msg = match.captured(1).trimmed();
                     msg += "}";
                     qDebug() << msg;
-                    QRegularExpression innerRe(R"((\S+)\s+(\w+)\s+\{\/data2\/([^\/]+)\/([^\/]+)\/([^\/]+)\/([^\}]+)\})");
+                    QRegularExpression innerRe(R"((\S+)\s+(\w+)\s+\{\/data2\/([^\/]*)\/([^\/]*)\/([^\/]*)\/([^\}]*)\})");
                     auto iM = innerRe.match(msg);
                     if(iM.hasMatch()){
                         result.push_back({iM.captured(1),iM.captured(2),iM.captured(3),iM.captured(4),iM.captured(5),iM.captured(6)});
