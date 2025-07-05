@@ -17,6 +17,12 @@ public:
         QString responseType;
         QString packet;
     };
+    static void connectToNetwork();
+    QTimer* pollTimer;
+    void stopPolling();
+private:
+    void startPolling();
+    void receiveMessages();
 signals:
     void vatsimCallsignFound(const QString& callsign);
     void testResult(const bool result);

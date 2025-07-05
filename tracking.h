@@ -28,6 +28,10 @@ public:
     QChartView* heightChartView = nullptr;
     void showHeightProfile(const QVector<double>& heightData);
     void displayDuration(int duration);
+    void updateCallsignLabel(const QString& callsign);
+    void connectedHoppie();
+    void disconnectedHoppie();
+    void updateMessageList();
 public slots:
     void updateLandingDataDisplay();
 private slots:
@@ -42,6 +46,12 @@ private slots:
     void onSaveDDChanged(const QString& saveName);
     void onSettingsClicked();
     void onSaveSimConfClicked();
+    void onRequestsClicked();
+    void onPredepClicked();
+    void onHoppieConnectClicked();
+    void onVatsimCIDClicked();
+    void onHoppieSecretClicked();
+    void onHoppieDisconnectClicked();
 signals:
     void landingDataUpdated();
 };

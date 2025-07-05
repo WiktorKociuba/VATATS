@@ -13,3 +13,5 @@ extern QVector<int> pointTimes;
 extern QString g_callsign;
 extern QString g_hoppieSecret;
 extern int messageId;
+extern QString g_vatsimCID;
+extern QVector<QString> g_messages;

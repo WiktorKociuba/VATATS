@@ -15,6 +15,9 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QFile>
+#include "src/cpdlcrequests.h"
+#include "src/predepgui.h"
+#include "src/cpdlc.h"
 
 QString saveNameChosen = nullptr;
 
@@ -66,6 +69,14 @@ tracking::tracking(QWidget *parent)
     connect(ui->clearMapPB, &QPushButton::clicked, this, &tracking::onClearMapClicked);
     connect(ui->chooseSaveDD, &QComboBox::currentTextChanged, this, &tracking::onSaveDDChanged);
     connect(this, &tracking::landingDataUpdated, this, &tracking::updateLandingDataDisplay);
+
+    //cpdlc
+    connect(ui->reqPB, &QPushButton::clicked, this, &tracking::onRequestsClicked);
+    connect(ui->predepPB, &QPushButton::clicked, this, &tracking::onPredepClicked);
+    connect(ui->connectHoppie, &QPushButton::clicked, this, &tracking::onHoppieConnectClicked);
+    connect(ui->CIDsave, &QPushButton::clicked, this, &tracking::onVatsimCIDClicked);
+    connect(ui->saveHoppie, &QPushButton::clicked, this, &tracking::onHoppieSecretClicked);
+    connect(ui->disconnectHoppie, &QPushButton::clicked, this, &tracking::onHoppieDisconnectClicked);
 
     //settings
     connect(ui->saveSimConf, &QPushButton::clicked, this, &tracking::onSaveSimConfClicked);
@@ -126,6 +137,28 @@ void tracking::onStopTrackingClicked(){
     bridgeToMSFS::closeConnection();
     tracking::displayDuration(readPoints::getFlightTime());
     tracking::populateSaveDD();
+}
+
+void tracking::onRequestsClicked(){
+    cpdlcrequests dlg(this);
+    dlg.exec();
+}
+
+void tracking::onPredepClicked(){
+    predepgui dlg(this);
+    dlg.exec();
+}
+
+void tracking::onHoppieConnectClicked(){
+    cpdlc::connectToNetwork();
+}
+
+void tracking::onHoppieDisconnectClicked(){
+    cpdlc* myCpdlc = new cpdlc(g_mainWindow);
+    g_callsign = "";
+    ui->callsignLabel->setText("Callsign:");
+    tracking::disconnectedHoppie();
+    myCpdlc->stopPolling();
 }
 
 void tracking::onClearMapClicked(){
@@ -216,5 +249,34 @@ void tracking::onSaveSimConfClicked(){
     }
     else{
         QMessageBox::warning(this,"Error","Could not write SimConnect.cfg!");
+    }
+}
+
+void tracking::updateCallsignLabel(const QString& callsign){
+    ui->callsignLabel->setText("Callsign: " + callsign);
+}
+
+void tracking::connectedHoppie(){
+    ui->connectHoppie->setEnabled(false);
+    ui->disconnectHoppie->setEnabled(true);
+}
+
+void tracking::disconnectedHoppie(){
+    ui->connectHoppie->setEnabled(true);
+    ui->disconnectHoppie->setEnabled(false);
+}
+
+void tracking::onVatsimCIDClicked(){
+    g_vatsimCID = ui->vatsimCIDInput->text().trimmed();
+}
+
+void tracking::onHoppieSecretClicked(){
+    g_hoppieSecret = ui->hoppieSecretInput->text().trimmed();
+}
+
+void tracking::updateMessageList(){
+    ui->listWidget->clear();
+    for(const QString& msg : g_messages){
+        ui->listWidget->addItem(msg);
     }
 }
