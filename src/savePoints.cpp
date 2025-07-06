@@ -146,4 +146,44 @@ void savePoints::savePointsTime(){
     QSqlDatabase::removeDatabase("savePointsTime_connection");
 }
 
-//void savePoints::saveSettings
+void savePoints::saveVatsimCid(){
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "vatsimcid_connection");
+        db.setDatabaseName("settings.sqlite");
+        if(!db.open()){
+            qWarning() << "Cannot open database" << db.lastError().text();
+        }
+        QSqlQuery query(db);
+        if(!query.exec("CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY, value TEXT)")){
+            qWarning() << "Cannot create table" << query.lastError().text();
+        }
+        query.prepare("REPLACE INTO settings (id, value) VALUES (1, :vatsimcid)");
+        query.bindValue(":vatsimcid", g_vatsimCID);
+        if(!query.exec()){
+            qWarning() << "Failed to save CID" << query.lastError().text();
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("vatsimcid_connection");
+}
+
+void savePoints::saveHoppieSecret(){
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "hoppie_connection");
+        db.setDatabaseName("settings.sqlite");
+        if(!db.open()){
+            qWarning() << "Cannot open database" << db.lastError().text();
+        }
+        QSqlQuery query(db);
+        if(!query.exec("CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY, value TEXT)")){
+            qWarning() << "Cannot create table" << query.lastError().text();
+        }
+        query.prepare("REPLACE INTO settings (id, value) VALUES (2, :hoppiesecret)");
+        query.bindValue(":hoppiesecret", g_hoppieSecret);
+        if(!query.exec()){
+            qWarning() << "Failed to save secret" << query.lastError().text();
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("hoppie_connection");
+}

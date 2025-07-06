@@ -1,13 +1,15 @@
 #include <QApplication>
 #include "globals.h"
 #include "cpdlc.h"
+#include "readPoints.h"
 
 tracking* g_mainWindow = nullptr;
 bridgeToMSFS* g_bridgeToMSFSInstance = nullptr;
 QVector<int> pointTimes;
 QString g_callsign, g_hoppieSecret, g_vatsimCID;
 int messageId;
-QVector<QString> g_messages;
+QVector<cpdlc::hoppieMessage> g_messages;
+cpdlc* myCpdlc = new cpdlc(g_mainWindow);
 
 int main(int argc, char** argv){
     QApplication app(argc,argv);
@@ -21,5 +23,6 @@ int main(int argc, char** argv){
     g_vatsimCID = "";
     messageId = 1;
     g_mainWindow->show();
+    readPoints::getHoppieVatsim();
     return app.exec();
 }

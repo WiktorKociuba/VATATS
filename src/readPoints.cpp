@@ -6,6 +6,7 @@
 #include <QFile>
 #include <tuple>
 #include "bridgeToMSFS.h"
+#include "globals.h"
 
 QVector<std::tuple<double,double,double>> readPoints::readPointsDB(QString saveName){
     QVector<std::tuple<double,double,double>> points;
@@ -107,4 +108,36 @@ QVector<int> readPoints::getPointsTime(){
     }
     QSqlDatabase::removeDatabase("getPointsTime_connection");
     return res;
+}
+
+void readPoints::getHoppieVatsim(){
+    if(!QFile::exists("settings.sqlite")){
+        return;
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "hoppievatsim_connection");
+        db.setDatabaseName("settings.sqlite");
+        if(!db.open()){
+            qWarning() << "Cannot open database" << db.lastError().text();
+        }
+        QSqlQuery query(db);
+        if(query.exec("SELECT * FROM settings WHERE id = 1")){
+            if(query.next()){
+                g_vatsimCID = query.value("value").toString();
+            }
+        }
+        else{
+            qWarning() << "Select failed" << query.lastError().text();
+        }
+        if(query.exec("SELECT * FROM settings WHERE id = 2")){
+            if(query.next()){
+                g_hoppieSecret = query.value("value").toString();
+            }
+        }
+        else{
+            qWarning() << "Select failed" << query.lastError().text();
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("hoppievatsim_connection");
 }

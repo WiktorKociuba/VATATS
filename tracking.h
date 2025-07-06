@@ -5,6 +5,7 @@
 #include <QWebEngineView>
 #include <QWebChannel>
 #include <QTimer>
+#include <QListWidgetItem>
 #include "src/PathProvider.h"
 #include <QtCharts/QChartView>
 
@@ -52,6 +53,7 @@ private slots:
     void onVatsimCIDClicked();
     void onHoppieSecretClicked();
     void onHoppieDisconnectClicked();
+    void onMessageClicked(QListWidgetItem* item);
 signals:
     void landingDataUpdated();
 };

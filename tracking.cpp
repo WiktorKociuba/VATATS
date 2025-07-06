@@ -18,6 +18,8 @@
 #include "src/cpdlcrequests.h"
 #include "src/predepgui.h"
 #include "src/cpdlc.h"
+#include "src/messageresponse.h"
+#include "src/savePoints.h"
 
 QString saveNameChosen = nullptr;
 
@@ -77,6 +79,7 @@ tracking::tracking(QWidget *parent)
     connect(ui->CIDsave, &QPushButton::clicked, this, &tracking::onVatsimCIDClicked);
     connect(ui->saveHoppie, &QPushButton::clicked, this, &tracking::onHoppieSecretClicked);
     connect(ui->disconnectHoppie, &QPushButton::clicked, this, &tracking::onHoppieDisconnectClicked);
+    connect(ui->listWidget, &QListWidget::itemClicked, this, &tracking::onMessageClicked);
 
     //settings
     connect(ui->saveSimConf, &QPushButton::clicked, this, &tracking::onSaveSimConfClicked);
@@ -154,7 +157,6 @@ void tracking::onHoppieConnectClicked(){
 }
 
 void tracking::onHoppieDisconnectClicked(){
-    cpdlc* myCpdlc = new cpdlc(g_mainWindow);
     g_callsign = "";
     ui->callsignLabel->setText("Callsign:");
     tracking::disconnectedHoppie();
@@ -166,6 +168,18 @@ void tracking::onClearMapClicked(){
     tracking::showHeightProfile({});
     ui->landingSpeedLabel->setText("");
 }
+
+void tracking::onMessageClicked(QListWidgetItem* item){
+    int row = ui->listWidget->row(item);
+    if(row >= 0 && row < g_messages.size()){
+        cpdlc::hoppieMessage msg = g_messages[row];
+        messageResponse dlg(this);
+        dlg.setupWindow(msg);
+        dlg.exec();
+    }
+}
+
+///////////////////////////////////////////////
 
 void tracking::populateSaveDD(){
     ui->chooseSaveDD->clear();
@@ -268,15 +282,17 @@ void tracking::disconnectedHoppie(){
 
 void tracking::onVatsimCIDClicked(){
     g_vatsimCID = ui->vatsimCIDInput->text().trimmed();
+    savePoints::saveVatsimCid();
 }
 
 void tracking::onHoppieSecretClicked(){
     g_hoppieSecret = ui->hoppieSecretInput->text().trimmed();
+    savePoints::saveHoppieSecret();
 }
 
 void tracking::updateMessageList(){
     ui->listWidget->clear();
-    for(const QString& msg : g_messages){
-        ui->listWidget->addItem(msg);
+    for(const cpdlc::hoppieMessage& msg : g_messages){
+        ui->listWidget->addItem(msg.packet);
     }
 }

@@ -55,13 +55,28 @@ void cpdlc::sendMessage(QString secret, QString callsign, QString station, QStri
     QNetworkAccessManager* manager = new QNetworkAccessManager(this);
     QString url = QString("http://www.hoppie.nl/acars/system/connect.html?logon=%1&from=%2&to=%3&type=%4&packet=%5&msgno=%6").arg(secret,callsign,station,type,packet,QString::number(messageId));
     QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(url)));
-    connect(reply, &QNetworkReply::finished, this, [this, reply](){
+    connect(reply, &QNetworkReply::finished, this, [this, reply, type](){
         bool result = false;
         if(reply->error() == QNetworkReply::NoError){
             QByteArray response = reply->readAll();
             QString responseStr = QString::fromUtf8(response).trimmed();
             if(responseStr.contains("ok")){
                 result = true;
+                if(type == "inforeq"){
+                    QRegularExpression re(R"(\{([^\}]*)\})");
+                    auto it = re.globalMatch(responseStr);
+                    if(it.hasNext()){
+                        auto match = it.next();
+                        QString temp = match.captured(1).trimmed();
+                        temp+="}";
+                        QRegularExpression innerRe(R"((\S+)\s+(\w+)\s+\{([^\}]*)\})");
+                        auto iM = innerRe.match(temp);
+                        if(iM.hasMatch()){
+                            g_messages.push_back({iM.captured(1).trimmed(),iM.captured(2).trimmed(),QString(""),QString(""),QString(""),iM.captured(3).trimmed()});
+                            static_cast<tracking*>(g_mainWindow)->updateMessageList();
+                        }
+                    }
+                }
             }
         }
         emit messageResult(result);
@@ -87,13 +102,28 @@ void cpdlc::pollMessages(QString secret, QString callsign){
                 auto it = re.globalMatch(responseStr);
                 while(it.hasNext()){
                     auto match = it.next();
+                    hoppieMessage temp = {};
                     QString msg = match.captured(1).trimmed();
                     msg += "}";
                     qDebug() << msg;
-                    QRegularExpression innerRe(R"((\S+)\s+(\w+)\s+\{\/data2\/([^\/]*)\/([^\/]*)\/([^\/]*)\/([^\}]*)\})");
+                    QRegularExpression innerRe(R"((\S+)\s+(\w+)\s+\{([^\}]*)\})");
                     auto iM = innerRe.match(msg);
                     if(iM.hasMatch()){
-                        result.push_back({iM.captured(1),iM.captured(2),iM.captured(3),iM.captured(4),iM.captured(5),iM.captured(6)});
+                        temp.station = iM.captured(1).trimmed();
+                        temp.type = iM.captured(2).trimmed();
+                        QString packet = iM.captured(3).trimmed();
+                        if(temp.type == "cpdlc"){
+                            QRegularExpression cpdlcRe(R"(\/data2\/([^\/]*)\/([^\/]*)\/([^\/]*)\/(.*))");
+                            auto cpdlcCap = cpdlcRe.match(packet);
+                            temp.messageID = cpdlcCap.captured(1).trimmed();
+                            temp.requestID = cpdlcCap.captured(2).trimmed();
+                            temp.responseType = cpdlcCap.captured(3).trimmed();
+                            temp.packet = cpdlcCap.captured(4).trimmed();
+                        }
+                        else if(temp.type == "telex"){
+                            temp.packet = packet;
+                        }
+                        result.push_front(temp);
                     }
                 }
             }
@@ -118,7 +148,6 @@ void cpdlc::connectToNetwork(){
 }
 
 void cpdlc::startPolling(){
-    qDebug() << "here";
     pollTimer = new QTimer(this);
     pollTimer->setInterval(QRandomGenerator::global()->bounded(45,76)*1000);
     connect(pollTimer, &QTimer::timeout, this, [this](){
@@ -127,7 +156,7 @@ void cpdlc::startPolling(){
     });
     connect(this, &cpdlc::pollResult, this, [this](const QVector<cpdlc::hoppieMessage>& messages){
         for(const auto& msg : messages){
-            g_messages.push_back(msg.packet);
+            g_messages.push_front(msg);
         }
         static_cast<tracking*>(g_mainWindow)->updateMessageList();
     });
@@ -135,5 +164,6 @@ void cpdlc::startPolling(){
 }
 
 void cpdlc::stopPolling(){
-    pollTimer->stop();
+    if(pollTimer)
+        pollTimer->stop();
 }

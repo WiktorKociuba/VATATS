@@ -27,10 +27,10 @@ void predepgui::onSendClicked(){
     QString stand = ui->standLine->text().trimmed();
     QString atis = ui->atisLine->text().trimmed();
     QString packet = QString("REQUEST PREDEP CLEARANCE @%1@ @%2@ TO @%3@ AT @%4@ STAND @%5@ ATIS @%6@").arg(callsign,acft,dest,from,stand,atis);
-    cpdlc* myCpdlc = new cpdlc(g_mainWindow);
-    QObject::connect(myCpdlc, &cpdlc::messageResult, [myCpdlc,packet](const bool result){
-        g_messages.push_back(packet);
+    QObject::connect(myCpdlc, &cpdlc::messageResult, [packet](const bool result){
+        g_messages.push_front({g_callsign,"telex","","","",packet});
         static_cast<tracking*>(g_mainWindow)->updateMessageList();
     });
     myCpdlc->sendMessage(g_hoppieSecret, g_callsign, station, "telex", packet);
+    this->accept();
 }

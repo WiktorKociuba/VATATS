@@ -3,6 +3,7 @@
 #include "tracking.h"
 #include <windows.h>
 #include "bridgeToMSFS.h"
+#include "cpdlc.h"
 
 extern tracking* g_mainWindow;
 static BOOL wasOnGround;
@@ -14,4 +15,5 @@ extern QString g_callsign;
 extern QString g_hoppieSecret;
 extern int messageId;
 extern QString g_vatsimCID;
-extern QVector<QString> g_messages;
+extern QVector<cpdlc::hoppieMessage> g_messages;
+extern cpdlc* myCpdlc;
