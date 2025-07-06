@@ -10,4 +10,6 @@ public:
     static void saveLandingTime();
     static void removeLastPoint(const QString& dbFile);
     static void savePointsTime();
+    static void saveVatsimCid();
+    static void saveHoppieSecret();
 };

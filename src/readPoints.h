@@ -9,4 +9,5 @@ public:
     static QVector<QString> getLastSaveName();
     static int getFlightTime();
     static QVector<int> getPointsTime();
+    static void getHoppieVatsim();
 };

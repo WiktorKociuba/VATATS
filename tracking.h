@@ -5,6 +5,7 @@
 #include <QWebEngineView>
 #include <QWebChannel>
 #include <QTimer>
+#include <QListWidgetItem>
 #include "src/PathProvider.h"
 #include <QtCharts/QChartView>
 
@@ -28,12 +29,19 @@ public:
     QChartView* heightChartView = nullptr;
     void showHeightProfile(const QVector<double>& heightData);
     void displayDuration(int duration);
+    void updateCallsignLabel(const QString& callsign);
+    void connectedHoppie();
+    void disconnectedHoppie();
+    void updateMessageList();
+    void updateCurrentStation();
+    void logonConfirmed();
 public slots:
     void updateLandingDataDisplay();
+    void logoffATC();
 private slots:
     void onFlightTrackingClicked();  
     void onChartsClicked();
-    void onFlightradarClicked();
+    void onCPDLCClicked();
     void onSimbriefClicked();
     void onStartTrackingClicked();
     void onShowLastClicked();  
@@ -42,6 +50,16 @@ private slots:
     void onSaveDDChanged(const QString& saveName);
     void onSettingsClicked();
     void onSaveSimConfClicked();
+    void onRequestsClicked();
+    void onPredepClicked();
+    void onHoppieConnectClicked();
+    void onVatsimCIDClicked();
+    void onHoppieSecretClicked();
+    void onHoppieDisconnectClicked();
+    void onMessageClicked(QListWidgetItem* item);
+    void logonATC();
+    void onTelexClicked();
+    void onInforeqClicked();
 signals:
     void landingDataUpdated();
 };

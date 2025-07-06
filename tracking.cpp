@@ -15,6 +15,14 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QFile>
+#include "src/cpdlcrequests.h"
+#include "src/predepgui.h"
+#include "src/cpdlc.h"
+#include "src/messageresponse.h"
+#include "src/savePoints.h"
+#include "src/logon.h"
+#include "src/telexdialog.h"
+#include "src/inforeqdialog.h"
 
 QString saveNameChosen = nullptr;
 
@@ -55,7 +63,7 @@ tracking::tracking(QWidget *parent)
     //navbar
     connect(ui->flightTrackingPB, &QPushButton::clicked, this, &tracking::onFlightTrackingClicked);
     connect(ui->chartsPB, &QPushButton::clicked, this, &tracking::onChartsClicked);
-    connect(ui->flightradarPB, &QPushButton::pressed, this, &tracking::onFlightradarClicked);
+    connect(ui->CPDLCPB, &QPushButton::pressed, this, &tracking::onCPDLCClicked);
     connect(ui->simbriefPB, &QPushButton::clicked, this, &tracking::onSimbriefClicked);
     connect(ui->settings, &QPushButton::clicked, this, &tracking::onSettingsClicked);
 
@@ -66,6 +74,19 @@ tracking::tracking(QWidget *parent)
     connect(ui->clearMapPB, &QPushButton::clicked, this, &tracking::onClearMapClicked);
     connect(ui->chooseSaveDD, &QComboBox::currentTextChanged, this, &tracking::onSaveDDChanged);
     connect(this, &tracking::landingDataUpdated, this, &tracking::updateLandingDataDisplay);
+
+    //cpdlc
+    connect(ui->reqPB, &QPushButton::clicked, this, &tracking::onRequestsClicked);
+    connect(ui->predepPB, &QPushButton::clicked, this, &tracking::onPredepClicked);
+    connect(ui->connectHoppie, &QPushButton::clicked, this, &tracking::onHoppieConnectClicked);
+    connect(ui->CIDsave, &QPushButton::clicked, this, &tracking::onVatsimCIDClicked);
+    connect(ui->saveHoppie, &QPushButton::clicked, this, &tracking::onHoppieSecretClicked);
+    connect(ui->disconnectHoppie, &QPushButton::clicked, this, &tracking::onHoppieDisconnectClicked);
+    connect(ui->listWidget, &QListWidget::itemClicked, this, &tracking::onMessageClicked);
+    connect(ui->logonPB, &QPushButton::clicked, this, &tracking::logonATC);
+    connect(ui->logoffPB, &QPushButton::clicked, this, &tracking::logoffATC);
+    connect(ui->telexPB, &QPushButton::clicked, this, &tracking::onTelexClicked);
+    connect(ui->inforeqPB, &QPushButton::clicked, this, &tracking::onInforeqClicked);
 
     //settings
     connect(ui->saveSimConf, &QPushButton::clicked, this, &tracking::onSaveSimConfClicked);
@@ -85,7 +106,7 @@ void tracking::onChartsClicked(){
     ui->stackedWidget->setCurrentIndex(1);
 }
 
-void tracking::onFlightradarClicked(){
+void tracking::onCPDLCClicked(){
     ui->stackedWidget->setCurrentIndex(2);
 }
 
@@ -128,11 +149,54 @@ void tracking::onStopTrackingClicked(){
     tracking::populateSaveDD();
 }
 
+void tracking::onRequestsClicked(){
+    cpdlcrequests dlg(this);
+    dlg.exec();
+}
+
+void tracking::onPredepClicked(){
+    predepgui dlg(this);
+    dlg.exec();
+}
+
+void tracking::onHoppieConnectClicked(){
+    cpdlc::connectToNetwork();
+}
+
+void tracking::onHoppieDisconnectClicked(){
+    g_callsign = "";
+    ui->callsignLabel->setText("Callsign:");
+    tracking::disconnectedHoppie();
+    myCpdlc->stopPolling();
+}
+
 void tracking::onClearMapClicked(){
     g_mainWindow->pathProvider->setPoints({});
     tracking::showHeightProfile({});
     ui->landingSpeedLabel->setText("");
 }
+
+void tracking::onMessageClicked(QListWidgetItem* item){
+    int row = ui->listWidget->row(item);
+    if(row >= 0 && row < g_messages.size()){
+        cpdlc::hoppieMessage msg = g_messages[row];
+        messageResponse dlg(this);
+        dlg.setupWindow(msg);
+        dlg.exec();
+    }
+}
+
+void tracking::onTelexClicked(){
+    telexdialog dlg(this);
+    dlg.exec();
+}
+
+void tracking::onInforeqClicked(){
+    inforeqdialog dlg(this);
+    dlg.exec();
+}
+
+///////////////////////////////////////////////
 
 void tracking::populateSaveDD(){
     ui->chooseSaveDD->clear();
@@ -217,4 +281,73 @@ void tracking::onSaveSimConfClicked(){
     else{
         QMessageBox::warning(this,"Error","Could not write SimConnect.cfg!");
     }
+}
+
+void tracking::updateCallsignLabel(const QString& callsign){
+    ui->callsignLabel->setText("Callsign: " + callsign);
+}
+
+void tracking::connectedHoppie(){
+    ui->connectHoppie->setEnabled(false);
+    ui->disconnectHoppie->setEnabled(true);
+    ui->logonPB->setEnabled(true);
+    ui->telexPB->setEnabled(true);
+    ui->inforeqPB->setEnabled(true);
+    ui->logoffPB->setEnabled(false);
+}
+
+void tracking::disconnectedHoppie(){
+    if(ui->logoffPB->isEnabled()){
+        this->logoffATC();
+    }
+    ui->connectHoppie->setEnabled(true);
+    ui->disconnectHoppie->setEnabled(false);
+    ui->logoffPB->setEnabled(false);
+    ui->logonPB->setEnabled(false);
+    ui->inforeqPB->setEnabled(false);
+    ui->telexPB->setEnabled(false);
+}
+
+void tracking::onVatsimCIDClicked(){
+    g_vatsimCID = ui->vatsimCIDInput->text().trimmed();
+    savePoints::saveVatsimCid();
+}
+
+void tracking::onHoppieSecretClicked(){
+    g_hoppieSecret = ui->hoppieSecretInput->text().trimmed();
+    savePoints::saveHoppieSecret();
+}
+
+void tracking::updateMessageList(){
+    ui->listWidget->clear();
+    for(const cpdlc::hoppieMessage& msg : g_messages){
+        ui->listWidget->addItem(msg.packet);
+    }
+}
+
+void tracking::logonATC(){
+    logon dlg(this);
+    dlg.exec();
+}
+
+void tracking::logonConfirmed(){
+    ui->logonPB->setEnabled(false);
+    ui->logoffPB->setEnabled(true);
+    ui->reqPB->setEnabled(true);
+}
+
+void tracking::logoffATC(){
+    ui->logonPB->setEnabled(true);
+    ui->logoffPB->setEnabled(false);
+    ui->reqPB->setEnabled(false);
+    cpdlc* cpdlcLogoff = new cpdlc(g_mainWindow);
+    QString packet = QString("/data2/%1//N/LOGOFF").arg(QString::number(messageId));
+    messageId++;
+    cpdlcLogoff->sendMessage(g_hoppieSecret,g_callsign,g_currentStation,"cpdlc",packet);
+    g_currentStation = "";
+    this->updateCurrentStation();
+}
+
+void tracking::updateCurrentStation(){
+    ui->currentStationLabel->setText("Current station: " + g_currentStation);
 }
