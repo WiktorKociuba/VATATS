@@ -315,11 +315,11 @@ void tracking::logoffATC(){
     ui->logonPB->setEnabled(true);
     ui->logoffPB->setEnabled(false);
     ui->reqPB->setEnabled(false);
-    g_currentStation = "";
     cpdlc* cpdlcLogoff = new cpdlc(g_mainWindow);
     QString packet = QString("/data2/%1//N/LOGOFF").arg(QString::number(messageId));
     messageId++;
     cpdlcLogoff->sendMessage(g_hoppieSecret,g_callsign,g_currentStation,"cpdlc",packet);
+    g_currentStation = "";
     this->updateCurrentStation();
 }
 

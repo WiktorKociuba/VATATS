@@ -52,7 +52,7 @@ void cpdlc::testConnection(QString secret, QString callsign){
 
 void cpdlc::sendMessage(QString secret, QString callsign, QString station, QString type, QString packet){
     QNetworkAccessManager* manager = new QNetworkAccessManager(this);
-    QString url = QString("http://www.hoppie.nl/acars/system/connect.html?logon=%1&from=%2&to=%3&type=%4&packet=%5&msgno=%6").arg(secret,callsign,station,type,packet,QString::number(messageId));
+    QString url = QString("http://www.hoppie.nl/acars/system/connect.html?logon=%1&from=%2&to=%3&type=%4&packet=%5").arg(secret,callsign,station,type,packet);
     QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(url)));
     connect(reply, &QNetworkReply::finished, this, [this, reply, type](){
         bool result = false;
@@ -84,6 +84,7 @@ void cpdlc::sendMessage(QString secret, QString callsign, QString station, QStri
             ifConnectedHoppie = true;
         }
         reply->deleteLater();
+        g_mainWindow->updateMessageList();
     });
 }
 

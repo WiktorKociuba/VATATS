@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QRandomGenerator>
 #include "globals.h"
 #include "cpdlc.h"
 #include "readPoints.h"
@@ -23,7 +24,7 @@ int main(int argc, char** argv){
     g_hoppieSecret = "";
     g_vatsimCID = "";
     g_currentStation = "";
-    messageId = 1;
+    messageId = QRandomGenerator::global()->bounded(1,9000);
     g_mainWindow->show();
     readPoints::getHoppieVatsim();
     return app.exec();
