@@ -28,4 +28,5 @@ signals:
     void testResult(const bool result);
     void messageResult(const bool result);
     void pollResult(const QVector<cpdlc::hoppieMessage> messages);
+    void logonAccepted();
 };

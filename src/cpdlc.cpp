@@ -41,7 +41,6 @@ void cpdlc::testConnection(QString secret, QString callsign){
         if(reply->error() == QNetworkReply::NoError){
             QByteArray response = reply->readAll();
             QString responseStr = QString::fromUtf8(response).trimmed();
-            qDebug() << "Ping:" << responseStr;
             if(responseStr.contains("ok")){
                 result = true;
             }
@@ -105,7 +104,6 @@ void cpdlc::pollMessages(QString secret, QString callsign){
                     hoppieMessage temp = {};
                     QString msg = match.captured(1).trimmed();
                     msg += "}";
-                    qDebug() << msg;
                     QRegularExpression innerRe(R"((\S+)\s+(\w+)\s+\{([^\}]*)\})");
                     auto iM = innerRe.match(msg);
                     if(iM.hasMatch()){
@@ -119,6 +117,17 @@ void cpdlc::pollMessages(QString secret, QString callsign){
                             temp.requestID = cpdlcCap.captured(2).trimmed();
                             temp.responseType = cpdlcCap.captured(3).trimmed();
                             temp.packet = cpdlcCap.captured(4).trimmed();
+                            if(temp.packet == "LOGON ACCEPTED"){
+                                emit logonAccepted();
+                            }
+                            else if(temp.packet.contains("HANDOVER")){
+                                g_currentStation = temp.packet.right(4);
+                                g_mainWindow->updateCurrentStation();
+                            }
+                            else if(temp.packet.contains("LOGOFF")){
+                                g_currentStation = "";
+                                g_mainWindow->logoffATC();
+                            }
                         }
                         else if(temp.type == "telex"){
                             temp.packet = packet;

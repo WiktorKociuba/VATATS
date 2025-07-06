@@ -10,6 +10,7 @@ QString g_callsign, g_hoppieSecret, g_vatsimCID;
 int messageId;
 QVector<cpdlc::hoppieMessage> g_messages;
 cpdlc* myCpdlc = new cpdlc(g_mainWindow);
+QString g_currentStation;
 
 int main(int argc, char** argv){
     QApplication app(argc,argv);
@@ -21,6 +22,7 @@ int main(int argc, char** argv){
     g_callsign = "";
     g_hoppieSecret = "";
     g_vatsimCID = "";
+    g_currentStation = "";
     messageId = 1;
     g_mainWindow->show();
     readPoints::getHoppieVatsim();

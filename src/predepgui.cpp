@@ -26,7 +26,7 @@ void predepgui::onSendClicked(){
     QString dest = ui->destLine->text().trimmed();
     QString stand = ui->standLine->text().trimmed();
     QString atis = ui->atisLine->text().trimmed();
-    QString packet = QString("REQUEST PREDEP CLEARANCE @%1@ @%2@ TO @%3@ AT @%4@ STAND @%5@ ATIS @%6@").arg(callsign,acft,dest,from,stand,atis);
+    QString packet = QString("REQUEST PREDEP CLEARANCE %1 %2 TO %3 AT %4 STAND %5 ATIS %6").arg(callsign,acft,dest,from,stand,atis);
     QObject::connect(myCpdlc, &cpdlc::messageResult, [packet](const bool result){
         g_messages.push_front({g_callsign,"telex","","","",packet});
         static_cast<tracking*>(g_mainWindow)->updateMessageList();

@@ -22,8 +22,8 @@ messageResponse::~messageResponse()
 void messageResponse::response(QString requestID, QString station, QString response){
     QString packet = QString("/data2/%1/%2/N/%3").arg(QString::number(messageId),requestID,response);
     messageId++;
-    QObject::connect(myCpdlc, &cpdlc::messageResult, [packet, requestID](const bool result){
-        g_messages.push_front({g_callsign,"cpdlc",QString::number(messageId),requestID,"NE",packet});
+    QObject::connect(myCpdlc, &cpdlc::messageResult, [packet, requestID, response](const bool result){
+        g_messages.push_front({g_callsign,"cpdlc",QString::number(messageId),requestID,"NE",response});
         static_cast<tracking*>(g_mainWindow)->updateMessageList();
     });
     myCpdlc->sendMessage(g_hoppieSecret, g_callsign, station, "cpdlc", packet);
@@ -50,7 +50,7 @@ void messageResponse::setupWindow(cpdlc::hoppieMessage message){
     }
     else{
         ui->posRes->setEnabled(false);
-        ui->posRes->setEnabled(false);
+        ui->negRes->setEnabled(false);
     }
     ui->messageBrowser->setText(message.packet);
     ui->fromLabel->setText("FROM: " + message.station);

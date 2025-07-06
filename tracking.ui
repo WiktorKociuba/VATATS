@@ -357,9 +357,12 @@
        </property>
       </widget>
       <widget class="QPushButton" name="reqPB">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
-         <x>150</x>
+         <x>320</x>
          <y>60</y>
          <width>80</width>
          <height>18</height>
@@ -367,6 +370,48 @@
        </property>
        <property name="text">
         <string>Requests</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="logonPB">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>60</y>
+         <width>91</width>
+         <height>18</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Request logon</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="currentStationLabel">
+       <property name="geometry">
+        <rect>
+         <x>120</x>
+         <y>30</y>
+         <width>131</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Current station:</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="logoffPB">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>230</x>
+         <y>60</y>
+         <width>80</width>
+         <height>18</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Logoff</string>
        </property>
       </widget>
      </widget>

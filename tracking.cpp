@@ -20,6 +20,7 @@
 #include "src/cpdlc.h"
 #include "src/messageresponse.h"
 #include "src/savePoints.h"
+#include "src/logon.h"
 
 QString saveNameChosen = nullptr;
 
@@ -80,6 +81,8 @@ tracking::tracking(QWidget *parent)
     connect(ui->saveHoppie, &QPushButton::clicked, this, &tracking::onHoppieSecretClicked);
     connect(ui->disconnectHoppie, &QPushButton::clicked, this, &tracking::onHoppieDisconnectClicked);
     connect(ui->listWidget, &QListWidget::itemClicked, this, &tracking::onMessageClicked);
+    connect(ui->logonPB, &QPushButton::clicked, this, &tracking::logonATC);
+    connect(ui->logoffPB, &QPushButton::clicked, this, &tracking::logoffATC);
 
     //settings
     connect(ui->saveSimConf, &QPushButton::clicked, this, &tracking::onSaveSimConfClicked);
@@ -295,4 +298,31 @@ void tracking::updateMessageList(){
     for(const cpdlc::hoppieMessage& msg : g_messages){
         ui->listWidget->addItem(msg.packet);
     }
+}
+
+void tracking::logonATC(){
+    logon dlg(this);
+    dlg.exec();
+}
+
+void tracking::logonConfirmed(){
+    ui->logonPB->setEnabled(false);
+    ui->logoffPB->setEnabled(true);
+    ui->reqPB->setEnabled(true);
+}
+
+void tracking::logoffATC(){
+    ui->logonPB->setEnabled(true);
+    ui->logoffPB->setEnabled(false);
+    ui->reqPB->setEnabled(false);
+    g_currentStation = "";
+    cpdlc* cpdlcLogoff = new cpdlc(g_mainWindow);
+    QString packet = QString("/data2/%1//N/LOGOFF").arg(QString::number(messageId));
+    messageId++;
+    cpdlcLogoff->sendMessage(g_hoppieSecret,g_callsign,g_currentStation,"cpdlc",packet);
+    this->updateCurrentStation();
+}
+
+void tracking::updateCurrentStation(){
+    ui->currentStationLabel->setText("Current station: " + g_currentStation);
 }

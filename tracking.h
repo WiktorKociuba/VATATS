@@ -33,8 +33,11 @@ public:
     void connectedHoppie();
     void disconnectedHoppie();
     void updateMessageList();
+    void updateCurrentStation();
+    void logonConfirmed();
 public slots:
     void updateLandingDataDisplay();
+    void logoffATC();
 private slots:
     void onFlightTrackingClicked();  
     void onChartsClicked();
@@ -54,6 +57,7 @@ private slots:
     void onHoppieSecretClicked();
     void onHoppieDisconnectClicked();
     void onMessageClicked(QListWidgetItem* item);
+    void logonATC();
 signals:
     void landingDataUpdated();
 };

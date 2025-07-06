@@ -83,7 +83,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>5</number>
    </property>
    <widget class="QWidget" name="blank">
     <widget class="QLabel" name="label_23">
@@ -324,7 +324,7 @@
       <string>REQUEST OFFSET</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="off2Line2">
+    <widget class="QLineEdit" name="off2line2">
      <property name="geometry">
       <rect>
        <x>200</x>
@@ -620,7 +620,7 @@
       <string>[direction]</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="reoute4line2">
+    <widget class="QLineEdit" name="route4line2">
      <property name="geometry">
       <rect>
        <x>310</x>
