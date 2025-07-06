@@ -71,7 +71,7 @@ void cpdlc::sendMessage(QString secret, QString callsign, QString station, QStri
                         QRegularExpression innerRe(R"((\S+)\s+(\w+)\s+\{([^\}]*)\})");
                         auto iM = innerRe.match(temp);
                         if(iM.hasMatch()){
-                            g_messages.push_back({iM.captured(1).trimmed(),iM.captured(2).trimmed(),QString(""),QString(""),QString(""),iM.captured(3).trimmed()});
+                            g_messages.push_front({iM.captured(1).trimmed(),iM.captured(2).trimmed(),QString(""),QString(""),QString(""),iM.captured(3).trimmed()});
                             static_cast<tracking*>(g_mainWindow)->updateMessageList();
                         }
                     }

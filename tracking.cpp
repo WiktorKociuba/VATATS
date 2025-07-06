@@ -21,6 +21,8 @@
 #include "src/messageresponse.h"
 #include "src/savePoints.h"
 #include "src/logon.h"
+#include "src/telexdialog.h"
+#include "src/inforeqdialog.h"
 
 QString saveNameChosen = nullptr;
 
@@ -83,6 +85,8 @@ tracking::tracking(QWidget *parent)
     connect(ui->listWidget, &QListWidget::itemClicked, this, &tracking::onMessageClicked);
     connect(ui->logonPB, &QPushButton::clicked, this, &tracking::logonATC);
     connect(ui->logoffPB, &QPushButton::clicked, this, &tracking::logoffATC);
+    connect(ui->telexPB, &QPushButton::clicked, this, &tracking::onTelexClicked);
+    connect(ui->inforeqPB, &QPushButton::clicked, this, &tracking::onInforeqClicked);
 
     //settings
     connect(ui->saveSimConf, &QPushButton::clicked, this, &tracking::onSaveSimConfClicked);
@@ -182,6 +186,16 @@ void tracking::onMessageClicked(QListWidgetItem* item){
     }
 }
 
+void tracking::onTelexClicked(){
+    telexdialog dlg(this);
+    dlg.exec();
+}
+
+void tracking::onInforeqClicked(){
+    inforeqdialog dlg(this);
+    dlg.exec();
+}
+
 ///////////////////////////////////////////////
 
 void tracking::populateSaveDD(){
@@ -276,11 +290,22 @@ void tracking::updateCallsignLabel(const QString& callsign){
 void tracking::connectedHoppie(){
     ui->connectHoppie->setEnabled(false);
     ui->disconnectHoppie->setEnabled(true);
+    ui->logonPB->setEnabled(true);
+    ui->telexPB->setEnabled(true);
+    ui->inforeqPB->setEnabled(true);
+    ui->logoffPB->setEnabled(false);
 }
 
 void tracking::disconnectedHoppie(){
+    if(ui->logoffPB->isEnabled()){
+        this->logoffATC();
+    }
     ui->connectHoppie->setEnabled(true);
     ui->disconnectHoppie->setEnabled(false);
+    ui->logoffPB->setEnabled(false);
+    ui->logonPB->setEnabled(false);
+    ui->inforeqPB->setEnabled(false);
+    ui->telexPB->setEnabled(false);
 }
 
 void tracking::onVatsimCIDClicked(){

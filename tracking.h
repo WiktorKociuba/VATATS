@@ -58,6 +58,8 @@ private slots:
     void onHoppieDisconnectClicked();
     void onMessageClicked(QListWidgetItem* item);
     void logonATC();
+    void onTelexClicked();
+    void onInforeqClicked();
 signals:
     void landingDataUpdated();
 };
