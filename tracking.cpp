@@ -27,6 +27,12 @@
 #include <QTreeWidgetItem>
 #include <QMap>
 #include "src/wordwrapdelegate.h"
+#include <QPdfView>
+#include <QPdfDocument>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QTemporaryFile>
+#include "src/zoomablePdfView.h"
 
 
 QString saveNameChosen = nullptr;
@@ -84,10 +90,12 @@ tracking::tracking(QWidget *parent)
     connect(ui->chartsList, &QTreeWidget::itemClicked, this, &tracking::onChartItemClicked);
     ui->chartsList->setColumnWidth(0,200);
     ui->chartsList->setItemDelegate(new WordWrapDelegate(ui->chartsList));
-    chartWebView = new QWebEngineView(ui->chartView);
-    QVBoxLayout* chartLayout = new QVBoxLayout(ui->chartView);
-    chartLayout->setContentsMargins(0,0,0,0);
-    chartLayout->addWidget(chartWebView);
+    pdfView = new ZoomablePdfView(ui->chartView);
+    pdfDoc = new QPdfDocument(this);
+    QVBoxLayout* pdfLayout = new QVBoxLayout(ui->chartView);
+    pdfLayout->setContentsMargins(0,0,0,0);
+    pdfLayout->addWidget(pdfView);
+    pdfView->setDocument(pdfDoc);
 
     //cpdlc
     connect(ui->reqPB, &QPushButton::clicked, this, &tracking::onRequestsClicked);
@@ -251,9 +259,28 @@ void tracking::onChartItemClicked(QTreeWidgetItem* item, int column){
     QString sourceUrl = item->data(0, Qt::UserRole).toString();
     if(sourceUrl.isEmpty()){
         QMessageBox::warning(this, "Chart Error", "No source URL available!");
+        column = 0;
         return;
     }
-    //todo
+    QNetworkAccessManager* manager = new QNetworkAccessManager(this);
+    QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(sourceUrl)));
+    connect(reply, &QNetworkReply::finished, this, [=](){
+        if(reply->error() == QNetworkReply::NoError){
+            QByteArray pdfData = reply->readAll();
+            QTemporaryFile* temp = new QTemporaryFile(this);
+            if(temp->open()){
+                temp->write(pdfData);
+                temp->flush();
+                pdfDoc->load(temp->fileName());
+                pdfView->setDocument(pdfDoc);
+                pdfView->setZoomMode(QPdfView::ZoomMode::FitInView);
+            }
+            else{
+                QMessageBox::warning(this, "Chart Error", "Failed to download PDF!");
+            }
+            reply->deleteLater();
+        }
+    });
 }
 
 //////////////////////////////////////////////

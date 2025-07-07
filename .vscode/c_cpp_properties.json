@@ -6,7 +6,7 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/libs/**",
                 "${workspaceFolder}/libs/SimConnect/**",
-                "C:/Qt/6.9.0/msvc2022_64/include/**"
+                "C:/Qt/6.9.1/msvc2022_64/include/**"
             ],
             "defines": [
                 "_DEBUG",

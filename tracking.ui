@@ -318,7 +318,7 @@
         <rect>
          <x>20</x>
          <y>60</y>
-         <width>271</width>
+         <width>211</width>
          <height>531</height>
         </rect>
        </property>
@@ -326,9 +326,9 @@
       <widget class="QWidget" name="chartView" native="true">
        <property name="geometry">
         <rect>
-         <x>300</x>
+         <x>240</x>
          <y>60</y>
-         <width>761</width>
+         <width>821</width>
          <height>531</height>
         </rect>
        </property>

@@ -9,6 +9,8 @@
 #include "src/PathProvider.h"
 #include <QtCharts/QChartView>
 #include <QTreeWidgetItem>
+#include <QPdfView>
+#include <QPdfDocument>
 
 namespace Ui {
 class tracking;
@@ -23,7 +25,6 @@ public:
     ~tracking();
     Ui::tracking *ui;
     QWebEngineView* mapView = nullptr;
-    QWebEngineView* chartWebView = nullptr;
     QWebChannel* webChannel = nullptr;
     PathProvider* pathProvider = nullptr;
     QTimer* trackingTimer = nullptr;
@@ -38,6 +39,8 @@ public:
     void updateCurrentStation();
     void logonConfirmed();
     void disableChartfoxAuthorize();
+    QPdfView* pdfView = nullptr;
+    QPdfDocument* pdfDoc = nullptr;
 public slots:
     void updateLandingDataDisplay();
     void logoffATC();
