@@ -2,11 +2,11 @@ TEMPLATE = app
 TARGET = VATATS
 
 QT = core gui
-QT += webchannel webenginewidgets sql charts
+QT += webchannel webenginewidgets sql charts pdf
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-HEADERS += src/PathProvider.h src/flightTrackingPage.h src/bridgeToMSFS.h src/savePoints.h src/savePoints.h src/readPoints.h src/globals.h src/cpdlc.h src/chartfox.h \
+HEADERS += src/PathProvider.h src/flightTrackingPage.h src/bridgeToMSFS.h src/savePoints.h src/savePoints.h src/readPoints.h src/globals.h src/cpdlc.h src/chartfox.h src/wordwrapdelegate.h \
     src/cpdlcrequests.h \
     src/inforeqdialog.h \
     src/logon.h \

@@ -17,8 +17,27 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include "globals.h"
+#include "savePoints.h"
+#include "readPoints.h"
+#include <QDateTime>
+#include "tracking.h"
 
 QString codeVerifier;
+
+void chartfox::retrieveToken(){
+    QString expireDatestr = readPoints::getSettingsData(5);
+    if(expireDatestr.isEmpty())
+        return;
+    qint64 expireDate = expireDatestr.toLongLong();
+    tracking* trackingChartfox = new tracking(g_mainWindow);
+    if(expireDate < QDateTime::currentSecsSinceEpoch()){
+        g_chartfoxToken = readPoints::getSettingsData(3);
+        trackingChartfox->disableChartfoxAuthorize();
+    }
+    else{
+        this->refreshToken();
+    }
+}
 
 QString chartfox::generateCodeVerifier(int length){
     const char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
@@ -97,10 +116,44 @@ void chartfox::exchangeForToken(const QString& code){
             QJsonDocument doc = QJsonDocument::fromJson(response);
             QJsonObject obj = doc.object();
             QString accessToken = obj["access_token"].toString();
+            QString refreshToken = obj["refresh_token"].toString();
+            qint64 expireDate = QDateTime::currentSecsSinceEpoch() + obj["expires_in"].toInt();
+            savePoints::saveSettings(3, accessToken);
+            savePoints::saveSettings(4, refreshToken);
+            savePoints::saveSettings(5, QString::number(expireDate));
             g_chartfoxToken = accessToken;
-            this->getCharts("EPWR");
+            emit chartfoxAuthorized();
         }
         reply->deleteLater();
+    });
+}
+
+void chartfox::refreshToken(){
+    QUrl url("https://api.chartfox.org/oauth/token");
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    QUrlQuery params;
+    params.addQueryItem("grant_type", "refresh_token");
+    params.addQueryItem("client_id", "9f55210b-28e4-4d0a-9129-5e8d0f8c93d5");
+    params.addQueryItem("refresh_token", readPoints::getSettingsData(4));
+
+    QNetworkAccessManager* manager = new QNetworkAccessManager(this);
+    QNetworkReply* reply = manager->post(request, params.toString(QUrl::FullyEncoded).toUtf8());
+
+    connect(reply, &QNetworkReply::finished, this, [reply, this](){
+        if(reply->error() == QNetworkReply::NoError){
+            QByteArray response = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(response);
+            QJsonObject obj = doc.object();
+            QString newAccessToken = obj["access_token"].toString();
+            QString newRefreshToken = obj["refresh_token"].toString();
+            qint64 expireDate = QDateTime::currentSecsSinceEpoch() + obj["expires_in"].toInt();
+            g_chartfoxToken = newAccessToken;
+            savePoints::saveSettings(3, newAccessToken);
+            savePoints::saveSettings(4, newRefreshToken);
+            savePoints::saveSettings(5, QString::number(expireDate));
+        }
     });
 }
 
@@ -152,11 +205,9 @@ void chartfox::getChartsForAirport(const QString& icao){
     });
 }
 
-void chartfox::getChartSource(const QString& id){
-    
-}
 void chartfox::getCharts(const QString& icao){
     connect(this, &chartfox::chartsFound, this, [this](QVector<chartfox::chartData> charts){
+        g_currentCharts.clear();
         g_currentCharts = charts;
         emit updateCharts();
     });

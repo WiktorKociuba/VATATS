@@ -8,6 +8,7 @@
 #include <QListWidgetItem>
 #include "src/PathProvider.h"
 #include <QtCharts/QChartView>
+#include <QTreeWidgetItem>
 
 namespace Ui {
 class tracking;
@@ -22,6 +23,7 @@ public:
     ~tracking();
     Ui::tracking *ui;
     QWebEngineView* mapView = nullptr;
+    QWebEngineView* chartWebView = nullptr;
     QWebChannel* webChannel = nullptr;
     PathProvider* pathProvider = nullptr;
     QTimer* trackingTimer = nullptr;
@@ -35,6 +37,7 @@ public:
     void updateMessageList();
     void updateCurrentStation();
     void logonConfirmed();
+    void disableChartfoxAuthorize();
 public slots:
     void updateLandingDataDisplay();
     void logoffATC();
@@ -60,6 +63,9 @@ private slots:
     void logonATC();
     void onTelexClicked();
     void onInforeqClicked();
+    void onChartsSearchClicked();
+    void onChartfoxAuthorizeClicked();
+    void onChartItemClicked(QTreeWidgetItem* item, int column);
 signals:
     void landingDataUpdated();
 };

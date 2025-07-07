@@ -12,4 +12,5 @@ public:
     static void savePointsTime();
     static void saveVatsimCid();
     static void saveHoppieSecret();
+    static void saveSettings(int id, QString data);
 };

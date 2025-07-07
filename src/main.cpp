@@ -31,7 +31,7 @@ int main(int argc, char** argv){
     messageId = QRandomGenerator::global()->bounded(1,9000);
     g_mainWindow->show();
     chartfox* myChartfox = new chartfox();
-    myChartfox->authorizeChartfox();
+    myChartfox->retrieveToken();
     readPoints::getHoppieVatsim();
     return app.exec();
 }
