@@ -18,3 +18,4 @@ extern QString g_vatsimCID;
 extern QVector<cpdlc::hoppieMessage> g_messages;
 extern cpdlc* myCpdlc;
 extern QString g_currentStation;
+extern QString g_chartfoxToken;
