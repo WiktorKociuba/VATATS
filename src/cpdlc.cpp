@@ -174,6 +174,6 @@ void cpdlc::startPolling(){
 }
 
 void cpdlc::stopPolling(){
-    if(pollTimer)
+    if(pollTimer->isActive())
         pollTimer->stop();
 }

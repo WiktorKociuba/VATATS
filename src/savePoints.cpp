@@ -187,3 +187,25 @@ void savePoints::saveHoppieSecret(){
     }
     QSqlDatabase::removeDatabase("hoppie_connection");
 }
+
+void savePoints::saveSettings(int id, QString data){
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "settings_connection");
+        db.setDatabaseName("settings.sqlite");
+        if(!db.open()){
+            qWarning() << "Cannot open database" << db.lastError().text();
+        }
+        QSqlQuery query(db);
+        if(!query.exec("CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY, value TEXT)")){
+            qWarning() << "Failed to create table" << query.lastError().text();
+        }
+        query.prepare("REPLACE INTO settings (id, value) VALUES (:id, :data)");
+        query.bindValue(":id", id);
+        query.bindValue(":data", data);
+        if(!query.exec()){
+            qWarning() << "Failed to replace" << query.lastError().text();
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("settings_connection");
+}

@@ -276,7 +276,96 @@
        </property>
       </widget>
      </widget>
-     <widget class="QWidget" name="page_2"/>
+     <widget class="QWidget" name="page_2">
+      <widget class="QLineEdit" name="icaoChartsLine">
+       <property name="geometry">
+        <rect>
+         <x>60</x>
+         <y>20</y>
+         <width>141</width>
+         <height>21</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_8">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>10</y>
+         <width>37</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>ICAO</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="searchChartsPB">
+       <property name="geometry">
+        <rect>
+         <x>210</x>
+         <y>20</y>
+         <width>80</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Search</string>
+       </property>
+      </widget>
+      <widget class="QTreeWidget" name="chartsList">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>60</y>
+         <width>211</width>
+         <height>531</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QWidget" name="chartView" native="true">
+       <property name="geometry">
+        <rect>
+         <x>240</x>
+         <y>60</y>
+         <width>821</width>
+         <height>531</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_9">
+       <property name="geometry">
+        <rect>
+         <x>590</x>
+         <y>429</y>
+         <width>201</width>
+         <height>191</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel { color : darkred; }</string>
+       </property>
+       <property name="text">
+        <string>FOR SIMULATION USE ONLY!</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_10">
+       <property name="geometry">
+        <rect>
+         <x>880</x>
+         <y>549</y>
+         <width>211</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel { color : black; }</string>
+       </property>
+       <property name="text">
+        <string>Charts provided by ChartFox</string>
+       </property>
+      </widget>
+     </widget>
      <widget class="QWidget" name="page_3">
       <widget class="QPushButton" name="connectHoppie">
        <property name="geometry">
@@ -637,6 +726,19 @@ li.checked::marker { content: &quot;\2612&quot;; }
        </property>
        <property name="text">
         <string>Save</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="chartfoxAuthorizePB">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>470</y>
+         <width>161</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Authorize with ChartFox</string>
        </property>
       </widget>
      </widget>

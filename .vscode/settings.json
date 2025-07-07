@@ -5,6 +5,8 @@
         "qvboxlayout": "cpp",
         "chrono": "cpp",
         "qwebchannel": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "future": "cpp",
+        "system_error": "cpp"
     }
 }

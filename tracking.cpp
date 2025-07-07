@@ -23,6 +23,17 @@
 #include "src/logon.h"
 #include "src/telexdialog.h"
 #include "src/inforeqdialog.h"
+#include "src/chartfox.h"
+#include <QTreeWidgetItem>
+#include <QMap>
+#include "src/wordwrapdelegate.h"
+#include <QPdfView>
+#include <QPdfDocument>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QTemporaryFile>
+#include "src/zoomablePdfView.h"
+
 
 QString saveNameChosen = nullptr;
 
@@ -41,7 +52,6 @@ tracking::tracking(QWidget *parent)
         mapView->setGeometry(ui->mapWidget->rect());
         mapView->show();
     }
-
     webChannel = new QWebChannel(mapView->page());
     pathProvider = new PathProvider;
     webChannel->registerObject("pathProvider", pathProvider);
@@ -67,13 +77,26 @@ tracking::tracking(QWidget *parent)
     connect(ui->simbriefPB, &QPushButton::clicked, this, &tracking::onSimbriefClicked);
     connect(ui->settings, &QPushButton::clicked, this, &tracking::onSettingsClicked);
 
-    //page 1
+    //tracking
     connect(ui->startTrackingPB, &QPushButton::clicked, this, &tracking::onStartTrackingClicked);
     connect(ui->showLastPB, &QPushButton::clicked, this, &tracking::onShowLastClicked);
     connect(ui->stopTrackingPB, &QPushButton::clicked, this, &tracking::onStopTrackingClicked);
     connect(ui->clearMapPB, &QPushButton::clicked, this, &tracking::onClearMapClicked);
     connect(ui->chooseSaveDD, &QComboBox::currentTextChanged, this, &tracking::onSaveDDChanged);
     connect(this, &tracking::landingDataUpdated, this, &tracking::updateLandingDataDisplay);
+
+    //charts
+    connect(ui->searchChartsPB, &QPushButton::clicked, this, &tracking::onChartsSearchClicked);
+    connect(ui->chartsList, &QTreeWidget::itemClicked, this, &tracking::onChartItemClicked);
+    ui->chartsList->setColumnWidth(0,200);
+    ui->chartsList->setItemDelegate(new WordWrapDelegate(ui->chartsList));
+    ui->chartsList->header()->hide();
+    pdfView = new ZoomablePdfView(ui->chartView);
+    pdfDoc = new QPdfDocument(this);
+    QVBoxLayout* pdfLayout = new QVBoxLayout(ui->chartView);
+    pdfLayout->setContentsMargins(0,0,0,0);
+    pdfLayout->addWidget(pdfView);
+    pdfView->setDocument(pdfDoc);
 
     //cpdlc
     connect(ui->reqPB, &QPushButton::clicked, this, &tracking::onRequestsClicked);
@@ -90,6 +113,7 @@ tracking::tracking(QWidget *parent)
 
     //settings
     connect(ui->saveSimConf, &QPushButton::clicked, this, &tracking::onSaveSimConfClicked);
+    connect(ui->chartfoxAuthorizePB, &QPushButton::clicked, this, &tracking::onChartfoxAuthorizeClicked);
 }
 
 tracking::~tracking()
@@ -196,7 +220,71 @@ void tracking::onInforeqClicked(){
     dlg.exec();
 }
 
-///////////////////////////////////////////////
+void tracking::onChartsSearchClicked(){
+    chartfox* chartfoxSearch = new chartfox();
+    QString icao = ui->icaoChartsLine->text();
+    connect(chartfoxSearch, &chartfox::updateCharts, [this](){
+        ui->chartsList->clear();
+        QMap<QString, QTreeWidgetItem*> listContent;
+        for(const auto& chart : g_currentCharts){
+            if(!listContent.contains(chart.type)){
+                QTreeWidgetItem* category = new QTreeWidgetItem(ui->chartsList);
+                category->setText(0, chart.type);
+                listContent[chart.type] = category;
+            }
+            QTreeWidgetItem* chartItem = new QTreeWidgetItem();
+            chartItem->setText(0, chart.name);
+            chartItem->setData(0, Qt::UserRole, chart.source);
+            chartItem->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
+            chartItem->setFlags(chartItem->flags());
+            listContent[chart.type]->addChild(chartItem);
+        }
+        ui->chartsList->expandAll();
+        ui->chartsList->viewport()->update();
+        ui->chartsList->updateGeometry();
+    });
+    chartfoxSearch->getCharts(icao);
+}
+
+void tracking::onChartfoxAuthorizeClicked(){
+    chartfox* chartfoxAuthorize = new chartfox();
+    connect(chartfoxAuthorize, &chartfox::chartfoxAuthorized, [this](){
+        ui->chartfoxAuthorizePB->setEnabled(false);
+    });
+    chartfoxAuthorize->authorizeChartfox();
+}
+
+void tracking::onChartItemClicked(QTreeWidgetItem* item, int column){
+    if(item->parent() == nullptr)
+        return;
+    QString sourceUrl = item->data(0, Qt::UserRole).toString();
+    if(sourceUrl.isEmpty()){
+        QMessageBox::warning(this, "Chart Error", "No source URL available!");
+        column = 0;
+        return;
+    }
+    QNetworkAccessManager* manager = new QNetworkAccessManager(this);
+    QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(sourceUrl)));
+    connect(reply, &QNetworkReply::finished, this, [=](){
+        if(reply->error() == QNetworkReply::NoError){
+            QByteArray pdfData = reply->readAll();
+            QTemporaryFile* temp = new QTemporaryFile(this);
+            if(temp->open()){
+                temp->write(pdfData);
+                temp->flush();
+                pdfDoc->load(temp->fileName());
+                pdfView->setDocument(pdfDoc);
+                pdfView->setZoomMode(QPdfView::ZoomMode::FitInView);
+            }
+            else{
+                QMessageBox::warning(this, "Chart Error", "Failed to download PDF!");
+            }
+            reply->deleteLater();
+        }
+    });
+}
+
+//////////////////////////////////////////////
 
 void tracking::populateSaveDD(){
     ui->chooseSaveDD->clear();
@@ -350,4 +438,8 @@ void tracking::logoffATC(){
 
 void tracking::updateCurrentStation(){
     ui->currentStationLabel->setText("Current station: " + g_currentStation);
+}
+
+void tracking::disableChartfoxAuthorize(){
+    ui->chartfoxAuthorizePB->setEnabled(false);
 }

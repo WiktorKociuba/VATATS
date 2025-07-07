@@ -141,3 +141,31 @@ void readPoints::getHoppieVatsim(){
     }
     QSqlDatabase::removeDatabase("hoppievatsim_connection");
 }
+
+QString readPoints::getSettingsData(int id){
+    if(!QFile::exists("settings.sqlite")){
+        return "";
+    }
+    QString result;
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "settings_connection");
+        db.setDatabaseName("settings.sqlite");
+        if(!db.open()){
+            qWarning() << "Cannot open database" << db.lastError().text();
+        }
+        QSqlQuery query(db);
+        query.prepare("SELECT * FROM settings WHERE id = :id");
+        query.bindValue(":id", id);
+        if(query.exec()){
+            if(query.next()){
+                result = query.value("value").toString();
+            }
+        }
+        else{
+            qWarning() << "Select failed" << query.lastError().text();
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("settings_connection");
+    return result;
+}

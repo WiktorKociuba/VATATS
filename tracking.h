@@ -8,6 +8,9 @@
 #include <QListWidgetItem>
 #include "src/PathProvider.h"
 #include <QtCharts/QChartView>
+#include <QTreeWidgetItem>
+#include <QPdfView>
+#include <QPdfDocument>
 
 namespace Ui {
 class tracking;
@@ -35,6 +38,9 @@ public:
     void updateMessageList();
     void updateCurrentStation();
     void logonConfirmed();
+    void disableChartfoxAuthorize();
+    QPdfView* pdfView = nullptr;
+    QPdfDocument* pdfDoc = nullptr;
 public slots:
     void updateLandingDataDisplay();
     void logoffATC();
@@ -60,6 +66,9 @@ private slots:
     void logonATC();
     void onTelexClicked();
     void onInforeqClicked();
+    void onChartsSearchClicked();
+    void onChartfoxAuthorizeClicked();
+    void onChartItemClicked(QTreeWidgetItem* item, int column);
 signals:
     void landingDataUpdated();
 };

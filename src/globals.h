@@ -4,6 +4,7 @@
 #include <windows.h>
 #include "bridgeToMSFS.h"
 #include "cpdlc.h"
+#include "chartfox.h"
 
 extern tracking* g_mainWindow;
 static BOOL wasOnGround;
@@ -18,3 +19,5 @@ extern QString g_vatsimCID;
 extern QVector<cpdlc::hoppieMessage> g_messages;
 extern cpdlc* myCpdlc;
 extern QString g_currentStation;
+extern QString g_chartfoxToken;
+extern QVector<chartfox::chartData> g_currentCharts;
