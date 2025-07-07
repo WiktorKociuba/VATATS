@@ -90,6 +90,7 @@ tracking::tracking(QWidget *parent)
     connect(ui->chartsList, &QTreeWidget::itemClicked, this, &tracking::onChartItemClicked);
     ui->chartsList->setColumnWidth(0,200);
     ui->chartsList->setItemDelegate(new WordWrapDelegate(ui->chartsList));
+    ui->chartsList->header()->hide();
     pdfView = new ZoomablePdfView(ui->chartView);
     pdfDoc = new QPdfDocument(this);
     QVBoxLayout* pdfLayout = new QVBoxLayout(ui->chartView);
