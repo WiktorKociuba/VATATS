@@ -75,7 +75,7 @@ void chartfox::startOAuthServer(){
         oauthServer->close();
     });
     if(!oauthServer->listen(QHostAddress::LocalHost, 5555)){
-        qWarning() << "Faile to start OAuth server:" << oauthServer->errorString();
+        qWarning() << "Failed to start OAuth server:" << oauthServer->errorString();
     }
 }
 
@@ -98,7 +98,7 @@ void chartfox::exchangeForToken(const QString& code){
             QJsonObject obj = doc.object();
             QString accessToken = obj["access_token"].toString();
             g_chartfoxToken = accessToken;
-            this->getChartsForAirport("EPWR");
+            this->getCharts("EPWR");
         }
         reply->deleteLater();
     });
@@ -110,20 +110,55 @@ void chartfox::getChartsForAirport(const QString& icao){
     request.setRawHeader("Authorization", QString("Bearer %1").arg(g_chartfoxToken).toUtf8());
     QNetworkAccessManager* manager = new QNetworkAccessManager(this);
     QNetworkReply* reply = manager->get(request);
-    connect(reply, &QNetworkReply::finished, this, [reply](){
+    connect(reply, &QNetworkReply::finished, this, [reply, this](){
         if(reply->error() == QNetworkReply::NoError){
             QByteArray response = reply->readAll();
-            qDebug() << response;
             QJsonDocument doc = QJsonDocument::fromJson(response);
             QJsonObject obj = doc.object();
-            QJsonArray charts = obj["charts"].toArray();
-            for(const QJsonValue& chartVal : charts){
-                QJsonObject chart = chartVal.toObject();
+            QJsonArray data = obj["data"].toArray();
+            int totalCharts = data.size();
+            auto sharedResult = std::make_shared<QVector<chartfox::chartData>>();
+            auto completed = std::make_shared<int>(0);
+            for(const QJsonValue& dataVal : data){
+                QJsonObject chart = dataVal.toObject();
                 QString chartName = chart["name"].toString();
-                QString chartUrl = chart["url"].toString();
-                qDebug() << chartName << chartUrl;
+                QString chartId = chart["id"].toString();
+                QString chartType = chart["type_key"].toString();
+                QUrl url(QString("https://api.chartfox.org/v2/charts/%1").arg(chartId));
+                QNetworkRequest chartRequest(url);
+                chartRequest.setRawHeader("Authorization", QString("Bearer %1").arg(g_chartfoxToken).toUtf8());
+                QNetworkAccessManager* chartManager = new QNetworkAccessManager(this);
+                QNetworkReply* chartReply = chartManager->get(chartRequest);
+                connect(chartReply, &QNetworkReply::finished, this, [=](){
+                    QString source;
+                    if(chartReply->error() == QNetworkReply::NoError){
+                        QByteArray response = chartReply->readAll();
+                        QJsonDocument doc = QJsonDocument::fromJson(response);
+                        QJsonObject obj = doc.object();
+                        source = obj["source_url"].toString();
+                    }
+                    sharedResult->push_back({chartName, chartId, chartType, source});
+                    chartReply->deleteLater();
+                    (*completed)++;
+                    if(*completed == totalCharts){
+                        emit chartsFound(*sharedResult);
+                    }
+                });
             }
         }
+        else
+            emit chartsFound({});
         reply->deleteLater();
     });
+}
+
+void chartfox::getChartSource(const QString& id){
+    
+}
+void chartfox::getCharts(const QString& icao){
+    connect(this, &chartfox::chartsFound, this, [this](QVector<chartfox::chartData> charts){
+        g_currentCharts = charts;
+        emit updateCharts();
+    });
+    this->getChartsForAirport(icao);
 }

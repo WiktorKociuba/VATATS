@@ -13,10 +13,12 @@ int messageId;
 QVector<cpdlc::hoppieMessage> g_messages;
 cpdlc* myCpdlc = new cpdlc(g_mainWindow);
 QString g_currentStation, g_chartfoxToken;
+QVector<chartfox::chartData> g_currentCharts;
 
 int main(int argc, char** argv){
     QApplication app(argc,argv);
     pointTimes = {};
+    g_currentCharts = {};
     g_messages = {};
     ifConnected = false;
     g_mainWindow = new tracking();
