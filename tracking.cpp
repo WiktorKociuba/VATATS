@@ -155,7 +155,13 @@ void tracking::onSimbriefClicked(){
 void tracking::onVatsimClicked(){
     ui->stackedWidget->setCurrentIndex(4);
     vatsimMap* updateVatsimMap = new vatsimMap();
+    QTimer* vatsimUpdate = new QTimer();
+    vatsimUpdate->setInterval(20000);
+    connect(vatsimUpdate, &QTimer::timeout, [updateVatsimMap](){
+        updateVatsimMap->requestData();
+    });
     updateVatsimMap->requestData();
+    vatsimUpdate->start();
 }
 
 void tracking::onSettingsClicked(){
@@ -465,7 +471,6 @@ void tracking::disableChartfoxAuthorize(){
 }
 
 void tracking::updateVatsimMap(){
-    qDebug() << g_currentPilotData.size();
     QVariantList planes = vatsimProvider->getVatsimPlanes();
     QJsonDocument doc = QJsonDocument::fromVariant(planes);
     QString js = QString("showVatsimPlanes(%1);").arg(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));

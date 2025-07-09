@@ -38,17 +38,23 @@
                 maxZoom: 19,
                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(map);
+            window.vatsimMarkers = [];
             function showVatsimPlanes(planes){
-                if(window.vatsimMarkers){
-                    window.vatsimMarkers.forEach(m => map.removeLayer(m));
-                }
+                window.vatsimMarkers.forEach(m => map.removeLayer(m));
                 window.vatsimMarkers = [];
+                //var markerCluster = L.markerClusterGroup();
                 planes.forEach(function(plane){
-                    var marker = L.marker([plane.lat, plane.lon], {
+                    var marker = L.circleMarker([plane.lat, plane.lon], {
+                        radius: 2,
+                        color: "#ff0000",
+                        fillColor: "ff0000",
+                        fillOpacity: 1
                         //icon TODO
                     }).addTo(map).bindPopup(plane.callsign);
+                    //markerCluster.addLayer(marker);
                     window.vatsimMarkers.push(marker);
                 });
+                //map.addLayer(markerCluster);
             }
             new QWebChannel(qt.webChannelTransport, function(channel){
                 var pathProvider = channel.objects.pathProvider;
