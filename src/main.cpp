@@ -16,6 +16,14 @@ cpdlc* myCpdlc = new cpdlc(g_mainWindow);
 QString g_currentStation, g_chartfoxToken;
 QVector<chartfox::chartData> g_currentCharts;
 QVector<vatsimMap::pilotData> g_currentPilotData;
+QVector<vatsimMap::ATCData> g_currentATCData;
+QVector<vatsimMap::atisData> g_currentAtisData;
+QVector<vatsimMap::prefileData> g_currentPrefileData;
+QVector<vatsimMap::extraData> g_facilities;
+QVector<vatsimMap::extraData> g_ratings;
+QVector<vatsimMap::extraData> g_pilotRatings;
+QVector<vatsimMap::extraData> g_militaryRatings;
+bool ifVatsim;
 
 int main(int argc, char** argv){
     QApplication app(argc,argv);
@@ -23,7 +31,15 @@ int main(int argc, char** argv){
     g_currentCharts = {};
     g_messages = {};
     g_currentPilotData = {};
+    g_currentATCData = {};
+    g_currentAtisData = {};
+    g_currentPrefileData = {};
+    g_facilities = {};
+    g_ratings = {};
+    g_pilotRatings = {};
+    g_militaryRatings = {};
     ifConnected = false;
+    ifVatsim = false;
     g_mainWindow = new tracking();
     g_bridgeToMSFSInstance = new bridgeToMSFS();
     g_callsign = "";
