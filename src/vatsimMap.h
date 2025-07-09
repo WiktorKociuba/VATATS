@@ -24,8 +24,8 @@ public:
         QString callsign;
         QString pilotRating;
         QString militaryRating;
-        QString latitude;
-        QString longitude;
+        double latitude;
+        double longitude;
         QString altitude;
         QString groundSpeed;
         QString transponder;

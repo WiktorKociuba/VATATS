@@ -10,6 +10,7 @@ public:
     Q_INVOKABLE QVariantList getPath() const;
     Q_INVOKABLE QVariantList getPointTimes() const;
     Q_INVOKABLE QVariantList getAltitude() const;
+    Q_INVOKABLE QVariantList getVatsimPlanes() const;
     void setPoints(const QVector<QPair<double,double>>& pts);
 signals:
     void pathChanged();

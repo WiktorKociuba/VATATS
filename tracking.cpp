@@ -52,10 +52,23 @@ tracking::tracking(QWidget *parent)
         mapView->setGeometry(ui->mapWidget->rect());
         mapView->show();
     }
+    vatsimView = new QWebEngineView(ui->vatsimWidget);
+    vatsimView->setUrl(QUrl("qrc:/src/vatsimMap.html"));
+    if(ui->vatsimWidget->layout()){
+        ui->vatsimWidget->layout()->addWidget(vatsimView);
+    }
+    else{
+        vatsimView->setGeometry(ui->vatsimWidget->rect());
+        vatsimView->show();
+    }
     webChannel = new QWebChannel(mapView->page());
     pathProvider = new PathProvider;
     webChannel->registerObject("pathProvider", pathProvider);
     mapView->page()->setWebChannel(webChannel);
+    vatsimChannel = new QWebChannel(vatsimView->page());
+    vatsimProvider = new PathProvider;
+    vatsimChannel->registerObject("pathProvider", vatsimProvider);
+    vatsimView->page()->setWebChannel(vatsimChannel);
 
     trackingTimer = new QTimer(this);
 
@@ -141,6 +154,8 @@ void tracking::onSimbriefClicked(){
 
 void tracking::onVatsimClicked(){
     ui->stackedWidget->setCurrentIndex(4);
+    vatsimMap* updateVatsimMap = new vatsimMap();
+    updateVatsimMap->requestData();
 }
 
 void tracking::onSettingsClicked(){
@@ -447,4 +462,12 @@ void tracking::updateCurrentStation(){
 
 void tracking::disableChartfoxAuthorize(){
     ui->chartfoxAuthorizePB->setEnabled(false);
+}
+
+void tracking::updateVatsimMap(){
+    qDebug() << g_currentPilotData.size();
+    QVariantList planes = vatsimProvider->getVatsimPlanes();
+    QJsonDocument doc = QJsonDocument::fromVariant(planes);
+    QString js = QString("showVatsimPlanes(%1);").arg(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+    vatsimView->page()->runJavaScript(js);
 }

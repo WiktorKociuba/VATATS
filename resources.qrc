@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>src/map.html</file>
+        <file>src/vatsimMap.html</file>
     </qresource>
 </RCC>

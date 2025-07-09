@@ -10,6 +10,8 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include "globals.h"
+#include "PathProvider.h"
+#include "tracking.h"
 
 void vatsimMap::getVatsimData(){
     QUrl url("https://data.vatsim.net/v3/vatsim-data.json");
@@ -18,6 +20,10 @@ void vatsimMap::getVatsimData(){
     QNetworkAccessManager* manager = new QNetworkAccessManager(this);
     QNetworkReply* reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, this, [reply, this](){
+        g_currentPilotData = {};
+        g_currentATCData = {};
+        g_currentAtisData = {};
+        g_currentPrefileData = {};
         QByteArray response = reply->readAll();
         QJsonDocument doc = QJsonDocument::fromJson(response);
         QJsonObject obj = doc.object();
@@ -32,8 +38,8 @@ void vatsimMap::getVatsimData(){
             QString callsign = pilot["callsign"].toString();
             QString pilotRating = pilot["pilot_rating"].toString();
             QString militaryRating = pilot["military_rating"].toString();
-            QString latitude = pilot["latitude"].toString();
-            QString longitude = pilot["longitude"].toString();
+            double latitude = pilot["latitude"].toDouble();
+            double longitude = pilot["longitude"].toDouble();
             QString altitude = pilot["altitude"].toString();
             QString groundSpeed = pilot["groundspeed"].toString();
             QString transponder = pilot["transponder"].toString();
@@ -143,9 +149,7 @@ void vatsimMap::getVatsimData(){
 
 void vatsimMap::requestData(){
     connect(this, &vatsimMap::newVatsimData, this, [](){
-        for(auto pilot : g_currentPilotData){
-            qDebug() << pilot.callsign;
-        }
+        g_mainWindow->updateVatsimMap();
     });
     this->getVatsimData();
 }

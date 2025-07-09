@@ -25,8 +25,11 @@ public:
     ~tracking();
     Ui::tracking *ui;
     QWebEngineView* mapView = nullptr;
+    QWebEngineView* vatsimView = nullptr;
     QWebChannel* webChannel = nullptr;
+    QWebChannel* vatsimChannel = nullptr;
     PathProvider* pathProvider = nullptr;
+    PathProvider* vatsimProvider = nullptr;
     QTimer* trackingTimer = nullptr;
     void populateSaveDD();
     QChartView* heightChartView = nullptr;
@@ -41,6 +44,7 @@ public:
     void disableChartfoxAuthorize();
     QPdfView* pdfView = nullptr;
     QPdfDocument* pdfDoc = nullptr;
+    void updateVatsimMap();
 public slots:
     void updateLandingDataDisplay();
     void logoffATC();

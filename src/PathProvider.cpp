@@ -1,6 +1,7 @@
 #include "PathProvider.h"
 #include <iostream>
 #include "globals.h"
+#include "vatsimMap.h"
 
 QVariantList PathProvider::getPath() const {
     QVariantList path;
@@ -20,6 +21,17 @@ QVariantList PathProvider::getAltitude() const {
     for(double a : bridgeToMSFS::altitudeData)
         altitude << a;
     return altitude;
+}
+QVariantList PathProvider::getVatsimPlanes() const {
+    QVariantList planes;
+    for(const auto& pilot : g_currentPilotData){
+        QVariantMap plane;
+        plane["lat"] = pilot.latitude;
+        plane["lon"] = pilot.longitude;
+        plane["callsign"] = pilot.callsign;
+        planes.append(plane);
+    }
+    return planes;
 }
 void PathProvider::setPoints(const QVector<QPair<double,double>>& pts){
     points = pts;
