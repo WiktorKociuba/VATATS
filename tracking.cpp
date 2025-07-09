@@ -76,6 +76,7 @@ tracking::tracking(QWidget *parent)
     connect(ui->CPDLCPB, &QPushButton::pressed, this, &tracking::onCPDLCClicked);
     connect(ui->simbriefPB, &QPushButton::clicked, this, &tracking::onSimbriefClicked);
     connect(ui->settings, &QPushButton::clicked, this, &tracking::onSettingsClicked);
+    connect(ui->vatsimPB, &QPushButton::clicked, this, &tracking::onVatsimClicked);
 
     //tracking
     connect(ui->startTrackingPB, &QPushButton::clicked, this, &tracking::onStartTrackingClicked);
@@ -138,8 +139,12 @@ void tracking::onSimbriefClicked(){
     ui->stackedWidget->setCurrentIndex(3);
 }
 
-void tracking::onSettingsClicked(){
+void tracking::onVatsimClicked(){
     ui->stackedWidget->setCurrentIndex(4);
+}
+
+void tracking::onSettingsClicked(){
+    ui->stackedWidget->setCurrentIndex(5);
 }
 
 void tracking::onShowLastClicked(){

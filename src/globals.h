@@ -5,6 +5,7 @@
 #include "bridgeToMSFS.h"
 #include "cpdlc.h"
 #include "chartfox.h"
+#include "vatsimMap.h"
 
 extern tracking* g_mainWindow;
 static BOOL wasOnGround;
@@ -21,3 +22,4 @@ extern cpdlc* myCpdlc;
 extern QString g_currentStation;
 extern QString g_chartfoxToken;
 extern QVector<chartfox::chartData> g_currentCharts;
+extern QVector<vatsimMap::pilotData> g_currentPilotData;

@@ -69,6 +69,7 @@ private slots:
     void onChartsSearchClicked();
     void onChartfoxAuthorizeClicked();
     void onChartItemClicked(QTreeWidgetItem* item, int column);
+    void onVatsimClicked();
 signals:
     void landingDataUpdated();
 };

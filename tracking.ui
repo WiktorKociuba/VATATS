@@ -117,6 +117,19 @@
      <string>Settings</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="vatsimPB">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>190</y>
+      <width>71</width>
+      <height>18</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>VATSIM map</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QScrollArea" name="scrollArea">
    <property name="geometry">
@@ -322,6 +335,11 @@
          <height>531</height>
         </rect>
        </property>
+       <column>
+        <property name="text">
+         <string notr="true">1</string>
+        </property>
+       </column>
       </widget>
       <widget class="QWidget" name="chartView" native="true">
        <property name="geometry">
@@ -540,6 +558,18 @@
       </widget>
      </widget>
      <widget class="QWidget" name="page_4"/>
+     <widget class="QWidget" name="page_6">
+      <widget class="QWidget" name="vatsimWidget" native="true">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>1071</width>
+         <height>761</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
      <widget class="QWidget" name="page_5">
       <widget class="QLabel" name="label">
        <property name="geometry">
