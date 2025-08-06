@@ -1,5 +1,6 @@
 #include "PathProvider.h"
 #include <iostream>
+#include <QDebug>
 #include "globals.h"
 #include "vatsimMap.h"
 
@@ -29,6 +30,24 @@ QVariantList PathProvider::getVatsimPlanes() const {
         plane["lat"] = pilot.latitude;
         plane["lon"] = pilot.longitude;
         plane["callsign"] = pilot.callsign;
+        plane["groundspeed"] = pilot.groundSpeed;
+        plane["heading"] = pilot.heading;
+        plane["altitude"] = pilot.altitude;
+        plane["cid"] = pilot.CID;
+        plane["name"] = pilot.name;
+        for(auto rating : g_pilotRatings){
+            if(rating.id == pilot.pilotRating)
+                plane["rating"] = rating.shortName;
+        }
+        plane["mrating"] = pilot.militaryRating;
+        plane["trans"] = pilot.transponder;
+        plane["dep"] = pilot.Flightplan.departure;
+        plane["arr"] = pilot.Flightplan.arrival;
+        plane["route"] = pilot.Flightplan.route;
+        plane["acft"] = pilot.Flightplan.aircraftShort;
+        plane["deptime"] = pilot.Flightplan.deptime;
+        plane["remarks"] = pilot.Flightplan.remarks;
+        plane["EET"] = pilot.Flightplan.enrouteTime;
         planes.append(plane);
     }
     return planes;

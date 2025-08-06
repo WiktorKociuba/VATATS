@@ -58,7 +58,7 @@ QString chartfox::generateCodeChallenge(const QString& code){
 
 void chartfox::authorizeChartfox(){
     QString codeChallenge = this->generateCodeChallenge(this->generateCodeVerifier(64));
-    QString url = QString("https://api.chartfox.org/oauth/authorize?response_type=code&client_id=9f55210b-28e4-4d0a-9129-5e8d0f8c93d5&redirect_uri=http://localhost:5555/callback&scope=airports:view+charts:index+charts:view+charts:view_source_url+charts:geos+charts:files&code_challenge=%1&code_challenge_method=S256").arg(codeChallenge);
+    QString url = QString("https://api.chartfox.org/oauth/authorize?response_type=code&client_id=9f72eedf-dde5-44fd-992f-fccd8bc27fa4&redirect_uri=http://localhost:5555/callback&scope=airports:view+charts:index+charts:view+charts:view_source_url+charts:geos+charts:files&code_challenge=%1&code_challenge_method=S256").arg(codeChallenge);
     QDesktopServices::openUrl(QUrl(url));
     this->startOAuthServer();
 }
@@ -104,7 +104,7 @@ void chartfox::exchangeForToken(const QString& code){
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     QUrlQuery params;
     params.addQueryItem("grant_type", "authorization_code");
-    params.addQueryItem("client_id", "9f55210b-28e4-4d0a-9129-5e8d0f8c93d5");
+    params.addQueryItem("client_id", "9f72eedf-dde5-44fd-992f-fccd8bc27fa4");
     params.addQueryItem("code", code);
     params.addQueryItem("redirect_uri", "http://localhost:5555/callback");
     params.addQueryItem("code_verifier", codeVerifier);

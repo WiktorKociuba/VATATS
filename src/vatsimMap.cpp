@@ -33,18 +33,18 @@ void vatsimMap::getVatsimData(){
         QJsonArray prefiles = obj["prefiles"].toArray();
         for(const QJsonValue &value : pilots){
             QJsonObject pilot = value.toObject();
-            QString CID = pilot["cid"].toString();
+            QString CID = QString::number(pilot["cid"].toInt());
             QString name = pilot["name"].toString();
             QString callsign = pilot["callsign"].toString();
-            QString pilotRating = pilot["pilot_rating"].toString();
-            QString militaryRating = pilot["military_rating"].toString();
+            QString pilotRating = QString::number(pilot["pilot_rating"].toInt());
+            QString militaryRating = QString::number(pilot["military_rating"].toInt());
             double latitude = pilot["latitude"].toDouble();
             double longitude = pilot["longitude"].toDouble();
-            QString altitude = pilot["altitude"].toString();
-            QString groundSpeed = pilot["groundspeed"].toString();
+            QString altitude = QString::number(pilot["altitude"].toInt());
+            QString groundSpeed = QString::number(pilot["groundspeed"].toInt());
             QString transponder = pilot["transponder"].toString();
-            QString heading = pilot["heading"].toString();
-            QString qnhmb = pilot["qnh_mb"].toString();
+            QString heading = QString::number(pilot["heading"].toInt());
+            QString qnhmb = QString::number(pilot["qnh_mb"].toInt());
             QString logonTime = pilot["logon_time"].toString();
             QJsonObject flightplanD = pilot["flight_plan"].toObject();
             QString flightRules = flightplanD["flight_rules"].toString();
@@ -122,14 +122,14 @@ void vatsimMap::getVatsimData(){
             }
             for(const QJsonValue &value : ratings){
                 QJsonObject rating = value.toObject();
-                QString id = rating["id"].toString();
+                QString id = QString::number(rating["id"].toInt());
                 QString shortName = rating["short_name"].toString();
                 QString longName = rating["long_name"].toString();
                 g_ratings.push_back({id,shortName,longName});
             }
             for(const QJsonValue &value : pilotRatings){
                 QJsonObject prating = value.toObject();
-                QString id = prating["id"].toString();
+                QString id = QString::number(prating["id"].toInt());
                 QString shortName = prating["short_name"].toString();
                 QString longName = prating["long_name"].toString();
                 g_pilotRatings.push_back({id,shortName,longName});
