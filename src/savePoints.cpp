@@ -7,6 +7,7 @@
 #include "bridgeToMSFS.h"
 #include <ctime>
 #include "globals.h"
+#include "vatsimMap.h"
 
 void savePoints::sendPointsToSQL(const QString& dbFile, double latitude, double longitude, double altitude){
     {
@@ -209,3 +210,31 @@ void savePoints::saveSettings(int id, QString data){
     }
     QSqlDatabase::removeDatabase("settings_connection");
 }
+
+void savePoints::saveSPPos(QVector<vatsimMap::pilotData> l_currentPilotData){
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "SP_connection");
+        db.setDatabaseName("tempVatsim.sqlite");
+        if(!db.open()){
+            qWarning() << "Cannot open database" << db.lastError().text();
+        }
+        for(auto pilotData : l_currentPilotData){
+            QString callsign = pilotData.callsign;
+            double lat = pilotData.latitude;
+            double lon = pilotData.longitude;
+            QSqlQuery query(db);
+            query.prepare(QString("CREATE TABLE IF NOT EXISTS \"%1\" (id INTEGER PRIMARY KEY AUTOINCREMENT, lat DOUBLE, lon DOUBLE)").arg(callsign));
+            if(!query.exec()){
+                qWarning() << "Cannot create table" << db.lastError().text();
+            }
+            query.prepare(QString("INSERT INTO \"%1\" (lat, lon) VALUES (:lat, :lon)").arg(callsign));
+            query.bindValue(":lat", lat);
+            query.bindValue(":lon", lon);
+            if(!query.exec()){
+                qWarning() << "Cannot insert data" << db.lastError().text();
+            }
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("SP_connection");
+};

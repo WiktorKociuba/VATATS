@@ -9,9 +9,12 @@
 #include <QByteArray>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QtConcurrent/QtConcurrentRun>
 #include "globals.h"
-#include "PathProvider.h"
 #include "tracking.h"
+#include "savePoints.h"
 
 void vatsimMap::getVatsimData(){
     QUrl url("https://data.vatsim.net/v3/vatsim-data.json");
@@ -31,6 +34,7 @@ void vatsimMap::getVatsimData(){
         QJsonArray controllers = obj["controllers"].toArray();
         QJsonArray atis = obj["atis"].toArray();
         QJsonArray prefiles = obj["prefiles"].toArray();
+        
         for(const QJsonValue &value : pilots){
             QJsonObject pilot = value.toObject();
             QString CID = QString::number(pilot["cid"].toInt());
@@ -61,6 +65,7 @@ void vatsimMap::getVatsimData(){
             vatsimMap::flightplanData tempFlightplan = {flightRules, aircraft, aircraftShort, departure, arrival, alternate, deptime, enrouteTime, remarks, route, assignedTransponder};
             g_currentPilotData.push_back({CID,name,callsign,pilotRating,militaryRating,latitude,longitude,altitude,groundSpeed,transponder,heading,qnhmb,logonTime, tempFlightplan});
         }
+        (void)QtConcurrent::run(savePoints::saveSPPos, g_currentPilotData);
         for(const QJsonValue &value : controllers){
             QJsonObject ATC = value.toObject();
             QString cid = ATC["cid"].toString();

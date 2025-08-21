@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QRandomGenerator>
+#include <QFile>
 #include "globals.h"
 #include "cpdlc.h"
 #include "readPoints.h"
@@ -52,5 +53,8 @@ int main(int argc, char** argv){
     chartfox* myChartfox = new chartfox();
     myChartfox->retrieveToken();
     readPoints::getHoppieVatsim();
+    if(QFile::exists("tempVatsim.sqlite")){
+        QFile::remove("tempVatsim.sqlite");
+    }
     return app.exec();
 }
