@@ -11,6 +11,7 @@ public:
     Q_INVOKABLE QVariantList getPointTimes() const;
     Q_INVOKABLE QVariantList getAltitude() const;
     Q_INVOKABLE QVariantList getVatsimPlanes() const;
+    Q_INVOKABLE QVariantList getCachedLoc(const QString& callsign) const;
     void setPoints(const QVector<QPair<double,double>>& pts);
 signals:
     void pathChanged();

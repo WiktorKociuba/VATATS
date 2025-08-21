@@ -39,6 +39,7 @@
                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(map);
             window.vatsimMarkers = [];
+            window.currentPolyline = null;
             function showVatsimPlanes(planes){
                 window.vatsimMarkers.forEach(m => map.removeLayer(m));
                 window.vatsimMarkers = [];
@@ -51,7 +52,18 @@
                         //icon TODO
                     });
                     marker.on('click', function(){
+                        if(window.currentPolyline){
+                            map.removeLayer(window.currentPolyline);
+                            window.currentPolyline = null;
+                        }
                         showSidebar(plane);
+                        window.pathProvider.getCachedLoc(plane.callsign, function(cachedLoc){
+                            if(cachedLoc.length > 1){
+                                var latlngs = cachedLoc.map(p => [p.lat, p.lon]);
+                                window.currentPolyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
+                            }
+                        })
+                        //add live refreshing
                     });
                     marker.addTo(map).bindPopup(plane.callsign);
                     window.vatsimMarkers.push(marker);
@@ -86,7 +98,7 @@
                 document.body.appendChild(sidebar);
             }
             new QWebChannel(qt.webChannelTransport, function(channel){
-                var pathProvider = channel.objects.pathProvider;
+                window.pathProvider = channel.objects.pathProvider;
             });
         </script>
     </body>

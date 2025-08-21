@@ -1,6 +1,9 @@
 #include "PathProvider.h"
 #include <iostream>
 #include <QDebug>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
 #include "globals.h"
 #include "vatsimMap.h"
 
@@ -55,4 +58,30 @@ QVariantList PathProvider::getVatsimPlanes() const {
 void PathProvider::setPoints(const QVector<QPair<double,double>>& pts){
     points = pts;
     emit pathChanged();
+}
+Q_INVOKABLE QVariantList PathProvider::getCachedLoc(const QString& callsign) const{
+    QVariantList cachedLoc;
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "cache_connection");
+    {
+        db.setDatabaseName("tempVatsim.sqlite");
+        if(!db.open()){
+            qWarning() << "Cannot open database" << db.lastError().text();
+        }
+        QSqlQuery query(db);
+        query.prepare(QString("SELECT lat, lon FROM \"%1\"").arg(callsign));
+        if(query.exec()){
+            while(query.next()){
+                QVariantMap point;
+                point["lat"] = query.value(0).toDouble();
+                point["lon"] = query.value(1).toDouble();
+                cachedLoc << point;
+            }
+        }
+        else{
+            qWarning() << "Cannot execute query" << db.lastError().text();
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("cache_connection");
+    return cachedLoc;
 }
