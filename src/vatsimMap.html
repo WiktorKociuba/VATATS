@@ -40,6 +40,8 @@
             }).addTo(map);
             window.vatsimMarkers = [];
             window.currentPolyline = null;
+            window.clickedAircraft = null;
+            window.currentLatlngs = [];
             function showVatsimPlanes(planes){
                 window.vatsimMarkers.forEach(m => map.removeLayer(m));
                 window.vatsimMarkers = [];
@@ -57,16 +59,27 @@
                             window.currentPolyline = null;
                         }
                         showSidebar(plane);
+                        window.currentLatlngs = [];
+                        window.currentAircraft = plane.callsign;
                         window.pathProvider.getCachedLoc(plane.callsign, function(cachedLoc){
                             if(cachedLoc.length > 1){
                                 var latlngs = cachedLoc.map(p => [p.lat, p.lon]);
                                 window.currentPolyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
+                                window.currentLatlngs = latlngs;
                             }
                         })
-                        //add live refreshing
+
                     });
                     marker.addTo(map).bindPopup(plane.callsign);
                     window.vatsimMarkers.push(marker);
+                    if(plane.callsign == window.currentAircraft){
+                        window.currentLatlngs.push([plane.lat, plane.lon]);
+                        if(window.currentLatlngs.length > 1){
+                            map.removeLayer(window.currentPolyline);
+                            window.currentPolyline = null;
+                            window.currentPolyline = L.polyline(window.currentLatlngs, {color: 'blue'}).addTo(map);
+                        }
+                    }
                 });
             }
             function showSidebar(aircraft){
