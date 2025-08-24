@@ -85,3 +85,21 @@ Q_INVOKABLE QVariantList PathProvider::getCachedLoc(const QString& callsign) con
     QSqlDatabase::removeDatabase("cache_connection");
     return cachedLoc;
 }
+
+Q_INVOKABLE QVariantList PathProvider::getVatsimControllers() const {
+    QVariantList controllers;
+    for(const auto& curATC : g_currentATCData){
+        QVariantMap ATC;
+        ATC["cid"] = curATC.cid;
+        ATC["name"] = curATC.name;
+        ATC["callsign"] = curATC.callsign;
+        ATC["frequency"] = curATC.freq;
+        ATC["facility"] = curATC.facility;
+        ATC["rating"] = curATC.rating;
+        ATC["range"] = curATC.visualRange;
+        ATC["textAtis"] = curATC.textAtis;
+        ATC["logonTime"] = curATC.logonTime;
+        controllers.append(ATC);
+    }
+    return controllers;
+}

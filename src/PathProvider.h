@@ -13,6 +13,7 @@ public:
     Q_INVOKABLE QVariantList getVatsimPlanes() const;
     Q_INVOKABLE QVariantList getCachedLoc(const QString& callsign) const;
     void setPoints(const QVector<QPair<double,double>>& pts);
+    Q_INVOKABLE QVariantList getVatsimControllers() const;
 signals:
     void pathChanged();
 private:

@@ -130,6 +130,11 @@
                     sidebar.remove()
                 }
             })
+            function showVatsimATC(){
+                var ATCList = [];
+                window.pathProvider.getVatsimControllers(function(ATCList){});
+                
+            }
             new QWebChannel(qt.webChannelTransport, function(channel){
                 window.pathProvider = channel.objects.pathProvider;
             });
