@@ -6,6 +6,8 @@
 #include "readPoints.h"
 #include "chartfox.h"
 #include "vatsimMap.h"
+#include "getSectorData.h"
+#include <QThread>
 
 tracking* g_mainWindow = nullptr;
 bridgeToMSFS* g_bridgeToMSFSInstance = nullptr;
@@ -56,5 +58,13 @@ int main(int argc, char** argv){
     if(QFile::exists("tempVatsim.sqlite")){
         QFile::remove("tempVatsim.sqlite");
     }
+    QThread* thread = new QThread;
+    getSectorData* worker = new getSectorData;
+    worker->moveToThread(thread);
+    QObject::connect(thread, &QThread::started, worker, &getSectorData::getFIRSectors);
+    QObject::connect(worker, &getSectorData::finished, thread, &QThread::quit);
+    QObject::connect(worker, &getSectorData::finished, worker, &QObject::deleteLater);
+    QObject::connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+    thread->start();
     return app.exec();
 }
