@@ -14,6 +14,7 @@
         <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
         <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
         <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+        <script src="https://rawcdn.githack.com/bbecquet/Leaflet.RotatedMarker/master/leaflet.rotatedMarker.js"></script>
         <style>
             html, body {
                 height: 100%;
@@ -46,12 +47,18 @@
                 window.vatsimMarkers.forEach(m => map.removeLayer(m));
                 window.vatsimMarkers = [];
                 planes.forEach(function(plane){
-                    var marker = L.circleMarker([plane.lat, plane.lon], {
-                        radius: 2,
-                        color: "#ff0000",
-                        fillColor: "ff0000",
-                        fillOpacity: 1
-                        //icon TODO
+                    var airplaneIcon = L.icon({
+                        iconUrl: 'qrc:/icons/planeIcon.png',
+                        shadowUrl: '',
+                        iconSize: [25,25],
+                        shadowSize: [0,0],
+                        iconAnchor: [12.5,12.5],
+                        shadowAnchor:[0,0],
+                        popupAnchor: [0,-12.5]
+                    });
+                    var marker = L.marker([plane.lat, plane.lon], {
+                        icon: airplaneIcon,
+                        rotationAngle: plane.heading
                     });
                     marker.on('click', function(){
                         if(window.currentPolyline){
@@ -70,6 +77,12 @@
                         })
 
                     });
+                    marker.on('mouseover', function(){
+                        this.openPopup();
+                    });
+                    marker.on('mouseout', function(){
+                        this.closePopup();
+                    });
                     marker.addTo(map).bindPopup(plane.callsign);
                     window.vatsimMarkers.push(marker);
                     if(plane.callsign == window.currentAircraft){
@@ -79,6 +92,7 @@
                             window.currentPolyline = null;
                             window.currentPolyline = L.polyline(window.currentLatlngs, {color: 'blue'}).addTo(map);
                         }
+                        showSidebar(plane);
                     }
                 });
             }
@@ -110,6 +124,12 @@
                 `;
                 document.body.appendChild(sidebar);
             }
+            document.addEventListener('click', function(event){
+                var sidebar = document.getElementById('sidebar');
+                if(sidebar && !sidebar.contains(event.target) && !event.target.classList.contains('leaflet-marker-icon')){
+                    sidebar.remove()
+                }
+            })
             new QWebChannel(qt.webChannelTransport, function(channel){
                 window.pathProvider = channel.objects.pathProvider;
             });
