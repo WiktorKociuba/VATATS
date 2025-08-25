@@ -127,6 +127,18 @@ Q_INVOKABLE QVariantList PathProvider::getFirBounds(QString fir) const{
         query.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=:tableName");
         query.bindValue(":tableName", fir);
         if((query.exec() && query.next())){
+            query.prepare(QString("SELECT data FROM \"%1\" WHERE id = :id LIMIT 1").arg(fir+"_META"));
+            query.bindValue(":id", 7);
+            QVariantMap center;
+            if(query.exec() && query.next()){
+                center["lat"] = query.value(0).toDouble();
+            }
+            query.prepare(QString("SELECT data FROM \"%1\" WHERE id = :id LIMIT 1").arg(fir+"_META"));
+            query.bindValue(":id", 8);
+            if(query.exec() && query.next()){
+                center["lon"] = query.value(0).toDouble();
+            }
+            bounds << center;
             query.prepare(QString("SELECT lat, lon FROM \"%1\"").arg(fir));
             query.exec();
             qDebug() << "here";
