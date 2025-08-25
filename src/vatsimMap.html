@@ -95,6 +95,7 @@
                         showSidebar(plane);
                     }
                 });
+                showVatsimATC();
             }
             function showSidebar(aircraft){
                 var oldSidebar = document.getElementById('sidebar');
@@ -130,9 +131,29 @@
                     sidebar.remove()
                 }
             })
+            let drawnFIRs = {};
             function showVatsimATC(){
                 var ATCList = [];
-                window.pathProvider.getVatsimControllers(function(ATCList){});
+                window.pathProvider.getVatsimControllers(function(ATCList){
+                    ATCList.forEach(function(ATC){
+                        let parts = ATC.callsign.split("_");
+                        let prefix = parts[0];
+                        let suffix = parts[1];
+                        if(suffix != "CTR" && suffix != "FSS")
+                            return;
+                        if(drawnFIRs[prefix])
+                            return;
+                        window.pathProvider.getFirBounds(prefix, function(bounds){
+                            const latlngs = bounds.map(pt=>[pt.lat,pt.lon]);
+                            drawnFIRs[prefix] = L.polygon(latlngs, {
+                                color: 'blue',
+                                opacity: 0.8,
+                                fillColor: 'blue',
+                                fillOpacity: 0.3
+                            }).addTo(map);
+                        });
+                    });
+                });
                 
             }
             new QWebChannel(qt.webChannelTransport, function(channel){

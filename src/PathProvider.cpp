@@ -7,6 +7,9 @@
 #include "globals.h"
 #include "vatsimMap.h"
 
+bool PathProvider::connectionOpen = false;
+QSqlDatabase PathProvider::db;
+
 QVariantList PathProvider::getPath() const {
     QVariantList path;
     for (const auto& pt : points)
@@ -102,4 +105,42 @@ Q_INVOKABLE QVariantList PathProvider::getVatsimControllers() const {
         controllers.append(ATC);
     }
     return controllers;
+}
+
+void PathProvider::createFIRConnection(){
+    db = QSqlDatabase::addDatabase("QSQLITE", "getfir_connection");
+    connectionOpen = true;
+}
+
+Q_INVOKABLE QVariantList PathProvider::getFirBounds(QString fir) const{
+    QVariantList bounds;
+    if(!connectionOpen){
+        PathProvider pp;
+        pp.createFIRConnection();
+    }
+    {
+        db.setDatabaseName("FIRData.sqlite");
+        if(!db.open()){
+            qWarning() << "cannot open db" << db.lastError().text();
+        }
+        QSqlQuery query(db);
+        query.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=:tableName");
+        query.bindValue(":tableName", fir);
+        if((query.exec() && query.next())){
+            query.prepare(QString("SELECT lat, lon FROM \"%1\"").arg(fir));
+            query.exec();
+            qDebug() << "here";
+            while(query.next()){
+                QVariantMap point;
+                point["lat"] = query.value(0).toDouble();
+                point["lon"] = query.value(1).toDouble();
+                bounds << point;
+            }
+        }
+        else{
+            qWarning() << "Fir not found in db";
+        }
+        db.close();
+    }
+    return bounds;
 }

@@ -2,6 +2,7 @@
 #include <QObject>
 #include <QVector>
 #include <QVariantList>
+#include <QSqlDatabase>
 
 class PathProvider : public QObject {
     Q_OBJECT
@@ -14,8 +15,12 @@ public:
     Q_INVOKABLE QVariantList getCachedLoc(const QString& callsign) const;
     void setPoints(const QVector<QPair<double,double>>& pts);
     Q_INVOKABLE QVariantList getVatsimControllers() const;
+    Q_INVOKABLE QVariantList getFirBounds(QString fir) const;
+    static void createFIRConnection();
 signals:
     void pathChanged();
 private:
     QVector<QPair<double,double>> points;
+    static bool connectionOpen;
+    static QSqlDatabase db;
 };
