@@ -14,12 +14,24 @@
         <style>
             html, body {
                 height: 100%;
+                width: 100%;
                 margin: 0;
                 padding: 0;
+                overflow: hidden;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
             }
             #map {
-                width: 100vw;
-                height: 100vh;
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
             }
             .leaflet-tooltip {
                 z-index: 10000;
@@ -36,6 +48,15 @@
                 maxZoom: 19,
                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             }).addTo(map);
+            function forceMapResize(){
+                if(typeof map !== 'undefined'){
+                    map.invalidateSize(true);
+                    setTimeout(function(){
+                        map.invalidateSize(true);
+                    }, 50);
+                }
+            }
+            window.forceMapResize = forceMapResize;
             new QWebChannel(qt.webChannelTransport, function(channel) {
                 var pathProvider = channel.objects.pathProvider;
                 function toPairs(latlngs) {
@@ -77,14 +98,15 @@
                             map.setView(latlngs[0], 15);
                             window.mapCentered = true;
                         }
+                        forceMapResize();
                     });
                 }
                 drawPath();
                 pathProvider.pathChanged.connect(drawPath);
-                window.addEventListener('resize', function() {
-                map.invalidateSize();
-                });
             });
+            setTimeout(forceMapResize, 100);
+            setTimeout(forceMapResize, 500);
+            setTimeout(forceMapResize, 1000);
         </script>
     </body>
 </html>

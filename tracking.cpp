@@ -87,7 +87,6 @@ tracking::tracking(QWidget *parent)
     connect(ui->flightTrackingPB, &QPushButton::clicked, this, &tracking::onFlightTrackingClicked);
     connect(ui->chartsPB, &QPushButton::clicked, this, &tracking::onChartsClicked);
     connect(ui->CPDLCPB, &QPushButton::pressed, this, &tracking::onCPDLCClicked);
-    connect(ui->simbriefPB, &QPushButton::clicked, this, &tracking::onSimbriefClicked);
     connect(ui->settings, &QPushButton::clicked, this, &tracking::onSettingsClicked);
     connect(ui->vatsimPB, &QPushButton::clicked, this, &tracking::onVatsimClicked);
 
@@ -128,6 +127,12 @@ tracking::tracking(QWidget *parent)
     //settings
     connect(ui->saveSimConf, &QPushButton::clicked, this, &tracking::onSaveSimConfClicked);
     connect(ui->chartfoxAuthorizePB, &QPushButton::clicked, this, &tracking::onChartfoxAuthorizeClicked);
+
+    QTimer::singleShot(200,this,[this](){
+        QResizeEvent* event = new QResizeEvent(this->size(), this->size());
+        this->resizeEvent(event);
+        delete event;
+    });
 }
 
 tracking::~tracking()
@@ -138,6 +143,11 @@ tracking::~tracking()
 void tracking::onFlightTrackingClicked(){
     ui->stackedWidget->setCurrentIndex(0);
     tracking::populateSaveDD();
+    QTimer::singleShot(200, this, [this](){
+        QResizeEvent* event = new QResizeEvent(this->size(), this->size());
+        this->resizeEvent(event);
+        delete event;
+    });
 }
 
 void tracking::onChartsClicked(){
@@ -162,6 +172,11 @@ void tracking::onVatsimClicked(){
     });
     updateVatsimMap->requestData();
     vatsimUpdate->start();
+    QTimer::singleShot(200,this,[this](){
+        QResizeEvent* event = new QResizeEvent(this->size(), this->size());
+        this->resizeEvent(event);
+        delete event;
+    });
 }
 
 void tracking::onSettingsClicked(){
@@ -475,4 +490,50 @@ void tracking::updateVatsimMap(){
     QJsonDocument doc = QJsonDocument::fromVariant(planes);
     QString js = QString("showVatsimPlanes(%1);").arg(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
     vatsimView->page()->runJavaScript(js);
+}
+
+void tracking::resizeEvent(QResizeEvent* event){
+    QWidget::resizeEvent(event);
+    if(mapView){
+        QWidget* pageWidget = ui->stackedWidget->widget(0);
+        if (pageWidget && pageWidget->layout()) {
+            QSize availableSize = pageWidget->size();
+
+            int mapHeight = availableSize.height() - 50 - 171 - 50;
+            int mapWidth = availableSize.width() - 20;
+
+            mapView->setMinimumSize(mapWidth, mapHeight);
+            mapView->resize(mapWidth, mapHeight);
+            mapView->updateGeometry();
+
+            QString resizeScript = QString(
+                "document.getElementById('map').style.width = '%1px';"
+                "document.getElementById('map').style.height = '%2px';"
+                "if (typeof map !== 'undefined') { map.invalidateSize(true); }"
+            ).arg(mapWidth).arg(mapHeight);
+            
+            mapView->page()->runJavaScript(resizeScript);
+        }
+    }
+    if(vatsimView){
+        QWidget* vatsimPageWidget = ui->stackedWidget->widget(4);
+        if (vatsimPageWidget && vatsimPageWidget->layout()) {
+            QSize availableSize = vatsimPageWidget->size();
+
+            int mapHeight = availableSize.height() - 20;
+            int mapWidth = availableSize.width() - 20;
+
+            vatsimView->setMinimumSize(mapWidth, mapHeight);
+            vatsimView->resize(mapWidth, mapHeight);
+            vatsimView->updateGeometry();
+
+            QString resizeScript = QString(
+                "document.getElementById('map').style.width = '%1px';"
+                "document.getElementById('map').style.height = '%2px';"
+                "if (typeof map !== 'undefined') { map.invalidateSize(true); }"
+            ).arg(mapWidth).arg(mapHeight);
+            
+            vatsimView->page()->runJavaScript(resizeScript);
+        }
+    }
 }

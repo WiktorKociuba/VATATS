@@ -76,6 +76,8 @@ private slots:
     void onVatsimClicked();
 signals:
     void landingDataUpdated();
+protected:
+    void resizeEvent(QResizeEvent* event) override;
 };
 
 #endif // TRACKING_H
