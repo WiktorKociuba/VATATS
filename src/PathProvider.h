@@ -15,7 +15,7 @@ public:
     Q_INVOKABLE QVariantList getCachedLoc(const QString& callsign) const;
     void setPoints(const QVector<QPair<double,double>>& pts);
     Q_INVOKABLE QVariantList getVatsimControllers() const;
-    Q_INVOKABLE QVariantList getFirBounds(QString fir) const;
+    Q_INVOKABLE QVariantList getFirBounds(QString fir, QString cid) const;
     static void createFIRConnection();
 signals:
     void pathChanged();

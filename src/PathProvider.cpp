@@ -4,8 +4,14 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QUrl>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QByteArray>
 #include "globals.h"
 #include "vatsimMap.h"
+#include "readPoints.h"
 
 bool PathProvider::connectionOpen = false;
 QSqlDatabase PathProvider::db;
@@ -112,7 +118,7 @@ void PathProvider::createFIRConnection(){
     connectionOpen = true;
 }
 
-Q_INVOKABLE QVariantList PathProvider::getFirBounds(QString fir) const{
+Q_INVOKABLE QVariantList PathProvider::getFirBounds(QString fir, QString cid) const{
     QVariantList bounds;
     if(!connectionOpen){
         PathProvider pp;
@@ -149,8 +155,33 @@ Q_INVOKABLE QVariantList PathProvider::getFirBounds(QString fir) const{
                 bounds << point;
             }
         }
+        /*
+        Index	Field	Example Value	Description
+        0	FIR ID	ADR	The FIR identifier (e.g., "ADR")
+        1	Min Altitude	0	Minimum altitude (usually FL, feet, or 0)
+        2	Unknown	0	(Unused/unknown, often 0)
+        3	Max Altitude	250	Maximum altitude (usually FL or feet)
+        4	Min Lat	39.651856	Minimum latitude of bounding box
+        5	Min Lon	13.0	Minimum longitude of bounding box
+        6	Max Lat	46.874747	Maximum latitude of bounding box
+        7	Max Lon	23.026053	Maximum longitude of bounding box
+        8	Center Lat	42.9	Center latitude of FIR
+        9	Center Lon	16.3	Center longitude of FIR
+        */
         else{
-            qWarning() << "Fir not found in db";
+            QUrl slurpapi(QString("https://slurper.vatsim.net/users/info?cid=%1").arg(cid));
+            QNetworkRequest request(slurpapi);
+            request.setRawHeader("Accept", "text/plain");
+            QNetworkAccessManager* manager = new QNetworkAccessManager();
+            QNetworkReply* reply = manager->get(request);
+            connect(reply, &QNetworkReply::finished, this, [reply, this](){
+                QByteArray raw = reply->readAll();
+                QString info = QString::fromUtf8(raw);
+                QStringList parts = info.split(',');
+                QString lat = parts.value(5);
+                QString lon = parts.value(6);
+                //QVector<QString> FIRNames = readPoints::getFIRMetaList();
+            });
         }
         db.close();
     }

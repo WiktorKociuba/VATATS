@@ -11,4 +11,5 @@ public:
     static QVector<int> getPointsTime();
     static void getHoppieVatsim();
     static QString getSettingsData(int id);
+    //static QVector<QString> getFIRMetaList();
 };

@@ -149,7 +149,7 @@
                             return;
                         if(drawnFIRs[prefix])
                             return;
-                        window.pathProvider.getFirBounds(prefix, function(bounds){
+                        window.pathProvider.getFirBounds(prefix, ATC.cid, function(bounds){
                             const latlngs = bounds.map(pt=>[pt.lat,pt.lon]);
                             const centerLat = bounds[0].lat;
                             const centerLon = bounds[0].lon;
