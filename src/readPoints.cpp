@@ -169,3 +169,30 @@ QString readPoints::getSettingsData(int id){
     QSqlDatabase::removeDatabase("settings_connection");
     return result;
 }
+
+/*QVector<QString> readPoints::getFIRMetaList(){
+    if(!QFile::exists("FIRData.sqlite")){
+        return;
+    }
+    QVector<QString> FIRNames;
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "getfir_connection");
+        db.setDatabaseName("FIRData.sqlite");
+        if(!db.open()){
+            qWarning() << "Cannot open database" << db.lastError().text();
+        }
+        QSqlQuery query(db);
+        query.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%META'");
+        if(query.exec()){
+            while(query.next()){
+                FIRNames.push_back(query.value("name").toString());
+            }
+        }
+        else{
+            qWarning() << "Query failed" << db.lastError().text();
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("getfir_connection");
+    return FIRNames;
+}*/

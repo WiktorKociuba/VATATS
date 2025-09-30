@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>src/map.html</file>
+        <file>src/vatsimMap.html</file>
+        <file>icons/planeIcon.png</file>
     </qresource>
 </RCC>

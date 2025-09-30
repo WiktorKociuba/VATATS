@@ -1,9 +1,13 @@
 #include <QApplication>
 #include <QRandomGenerator>
+#include <QFile>
 #include "globals.h"
 #include "cpdlc.h"
 #include "readPoints.h"
 #include "chartfox.h"
+#include "vatsimMap.h"
+#include "getSectorData.h"
+#include <QThread>
 
 tracking* g_mainWindow = nullptr;
 bridgeToMSFS* g_bridgeToMSFSInstance = nullptr;
@@ -14,13 +18,31 @@ QVector<cpdlc::hoppieMessage> g_messages;
 cpdlc* myCpdlc = new cpdlc(g_mainWindow);
 QString g_currentStation, g_chartfoxToken;
 QVector<chartfox::chartData> g_currentCharts;
+QVector<vatsimMap::pilotData> g_currentPilotData;
+QVector<vatsimMap::ATCData> g_currentATCData;
+QVector<vatsimMap::atisData> g_currentAtisData;
+QVector<vatsimMap::prefileData> g_currentPrefileData;
+QVector<vatsimMap::extraData> g_facilities;
+QVector<vatsimMap::extraData> g_ratings;
+QVector<vatsimMap::extraData> g_pilotRatings;
+QVector<vatsimMap::extraData> g_militaryRatings;
+bool ifVatsim;
 
 int main(int argc, char** argv){
     QApplication app(argc,argv);
     pointTimes = {};
     g_currentCharts = {};
     g_messages = {};
+    g_currentPilotData = {};
+    g_currentATCData = {};
+    g_currentAtisData = {};
+    g_currentPrefileData = {};
+    g_facilities = {};
+    g_ratings = {};
+    g_pilotRatings = {};
+    g_militaryRatings = {};
     ifConnected = false;
+    ifVatsim = false;
     g_mainWindow = new tracking();
     g_bridgeToMSFSInstance = new bridgeToMSFS();
     g_callsign = "";
@@ -33,5 +55,16 @@ int main(int argc, char** argv){
     chartfox* myChartfox = new chartfox();
     myChartfox->retrieveToken();
     readPoints::getHoppieVatsim();
+    if(QFile::exists("tempVatsim.sqlite")){
+        QFile::remove("tempVatsim.sqlite");
+    }
+    QThread* thread = new QThread;
+    getSectorData* worker = new getSectorData;
+    worker->moveToThread(thread);
+    QObject::connect(thread, &QThread::started, worker, &getSectorData::getFIRSectors);
+    QObject::connect(worker, &getSectorData::finished, thread, &QThread::quit);
+    QObject::connect(worker, &getSectorData::finished, worker, &QObject::deleteLater);
+    QObject::connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+    thread->start();
     return app.exec();
 }
