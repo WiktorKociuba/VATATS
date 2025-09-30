@@ -40,7 +40,12 @@
                 display: inline-block;
                 font-size: 12px;
                 white-space: nowrap;
-                pointer-events: none;
+                pointer-events: auto;
+            }
+            .fir-tooltip{
+                font-size: 12px;
+                line-height: 1.2;
+                text-align: left;
             }
         </style>
     </head>
@@ -56,12 +61,49 @@
             window.currentPolyline = null;
             window.clickedAircraft = null;
             window.currentLatlngs = [];
+            const firLabels = {};
+            const firControllers = {};
+            function buildFIRTooltipHTML(fir){
+                const entries = [];
+                const mapFreq = firControllers[fir];
+                if(mapFreq){
+                    mapFreq.forEach((freq,cs)=>{
+                        entries.push(cs + " " + freq);
+                    });
+                }
+                let body = entries.length ? entries.join("<br>") : "No controllers";
+                return "<b>"+fir+"</b><br>"+body;
+            }
+            function updateFIRTooltip(fir){
+                const marker = firLabels[fir];
+                if(!marker) return;
+                const html = buildFIRTooltipHTML(fir);
+                if(marker.getTooltip()){
+                    marker.getTooltip().setContent(html);
+                }
+                else{
+                    marker.bindTooltip(html, {
+                        direction:'top',
+                        sticky:true,
+                        opacity:0.95,
+                        className:'fir-tooltip'
+                    });
+                }
+            }
+            function addControllerToFir(fir, callsign, freq){
+                if(!firControllers[fir])
+                    firControllers[fir] = new Map();
+                if(!firControllers[fir].has(callsign)){
+                    firControllers[fir].set(callsign,freq);
+                    updateFIRTooltip(fir);
+                }
+            }
             function addCenteredLabel(text, lat, lon){
                 const baseIcon = L.divIcon({
                     className: 'fir-label',
                     html: text
                 });
-                const marker = L.marker([lat,lon], {icon: baseIcon, interactive:false}).addTo(map);
+                const marker = L.marker([lat,lon], {icon: baseIcon, interactive:true}).addTo(map);
                 requestAnimationFrame(()=>{
                     const el = marker.getElement();
                     if(!el) return;
@@ -73,6 +115,13 @@
                         iconSize: [w,h],
                         iconAnchor: [w/2,h/2]
                     }));
+                    updateFIRTooltip(text);
+                });
+                marker.on('mouseover', ()=> {
+                    if(marker.getTooltip()) marker.openTooltip();
+                });
+                marker.on('mouseout', ()=> {
+                    if(marker.getTooltip()) marker.closeTooltip();
                 });
                 return marker;
             }
@@ -178,7 +227,6 @@
             })
             let pendingControllers = new Map();
             let drawnFIRs = {};
-            let firLabels = {};
             let allFIRBounds = {};
             function showVatsimATC(){
                 window.pathProvider.getVatsimControllers().then(function(ATCList){
@@ -195,6 +243,10 @@
                             return;
                         if(drawnFIRs[prefix])
                             return;
+                        if(firLabels[prefix]){
+                            addControllerToFir(prefix, ATC.callsign, ATC.frequency);
+                            return;
+                        }
                         window.pathProvider.getFirBounds(prefix, ATC.cid).then(function(bounds){
                             if(!bounds || bounds.length < 2) return;
                             const latlngs = bounds.map(pt=>[pt.lat,pt.lon]);
@@ -208,6 +260,7 @@
                                 fillOpacity: 0.5
                             }).addTo(map);
                             firLabels[prefix] = addCenteredLabel(prefix,centerLat,centerLon);
+                            addControllerToFir(prefix, ATC.callsign, ATC.frequency);
                         });
 
                     });
