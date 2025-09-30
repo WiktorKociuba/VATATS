@@ -18,19 +18,43 @@
 bool PathProvider::connectionOpen = false;
 QSqlDatabase PathProvider::db;
 QStringList PathProvider::firTables;
-static bool pointInPolygon(double lat, double lon, const QVector<QPair<double,double>>& poly){
-    bool inside = false;
+static int isLeft(double x0,double y0,double x1,double y1,double x2,double y2){
+    double v = (x1 - x0)*(y2 - y0) - (x2 - x0)*(y1 - y0);
+    if(v > 0) return 1;
+    if(v < 0) return -1;
+    return 0;
+}
+
+static bool pointInPolygonWinding(double testLat, double testLon, const QVector<QPair<double,double>>& poly){
+    int wn = 0;
     int n = poly.size();
-    for(int i = 0, j = n-1; i < n; j=i++){
-        double lat_i = poly[i].first;
-        double lon_i = poly[i].second;
-        double lat_j = poly[j].first;
-        double lon_j = poly[j].second;
-        bool intersect = ((lat_i > lat) != (lat_j > lat)) && (lon < (lon_j - lon_i) * (lat - lat_i) / ((lat_j - lat_i)==0 ? 1e-12 : (lat_j-lat_i)) + lon_i);
-        if(intersect) inside = !inside;
+    if(n < 3) return false;
+    for(int i=0; i<n; ++i){
+        int j = (i+1) % n;
+        double yi = poly[i].first,  xi = poly[i].second;
+        double yj = poly[j].first,  xj = poly[j].second;
+        if(testLat == yi && testLon == xi) return true;
+        if(yi <= testLat){
+            if(yj > testLat){
+                int side = isLeft(xi, yi, xj, yj, testLon, testLat);
+                if(side > 0) ++wn;
+                else if(side == 0){
+                    if((testLon >= std::min(xi,xj) && testLon <= std::max(xi,xj)))
+                        return true;
+                }
+            }
+        } else {
+            if(yj <= testLat){
+                int side = isLeft(xi, yi, xj, yj, testLon, testLat);
+                if(side < 0) --wn;
+                else if(side == 0){
+                    if((testLon >= std::min(xi,xj) && testLon <= std::max(xi,xj)))
+                        return true;
+                }
+            }
+        }
     }
-    qDebug() << "is in? " << inside;
-    return inside;
+    return wn != 0;
 }
 QVariantList PathProvider::getPath() const {
     QVariantList path;
@@ -263,7 +287,7 @@ Q_INVOKABLE QVariantList PathProvider::getFirBounds(QString fir, QString cid) co
                 }
                 if(poly.size() < 3) continue;
                 qDebug() << candidate;
-                if(pointInPolygon(ctrlLat, ctrlLon, poly)){
+                if(pointInPolygonWinding(ctrlLat, ctrlLon, poly)){
                     matchedFIR = candidate;
                     matchedCenter["lat"] = centerLat;
                     matchedCenter["lon"] = centerLon;

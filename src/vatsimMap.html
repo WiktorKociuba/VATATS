@@ -33,11 +33,14 @@
                 background: rgba(36, 0, 196, 0.437);
                 color: white;
                 padding: 2px 16px;
-                border-radius: 3px;
-                font-weight: bold;
-                text-align: left;
+                border-radius: 4px;
+                font-weight: 600;
+                line-height: 1.2;
+                text-align: center;
+                display: inline-block;
                 font-size: 12px;
-                border: none;
+                white-space: nowrap;
+                pointer-events: none;
             }
         </style>
     </head>
@@ -53,6 +56,26 @@
             window.currentPolyline = null;
             window.clickedAircraft = null;
             window.currentLatlngs = [];
+            function addCenteredLabel(text, lat, lon){
+                const baseIcon = L.divIcon({
+                    className: 'fir-label',
+                    html: text
+                });
+                const marker = L.marker([lat,lon], {icon: baseIcon, interactive:false}).addTo(map);
+                requestAnimationFrame(()=>{
+                    const el = marker.getElement();
+                    if(!el) return;
+                    const w = el.offsetWidth;
+                    const h = el.offsetHeight;
+                    marker.setIcon(L.divIcon({
+                        className: 'fir-label',
+                        html: text,
+                        iconSize: [w,h],
+                        iconAnchor: [w/2,h/2]
+                    }));
+                });
+                return marker;
+            }
             function isInPolygon(point, polygon){
                 const [x, y] = point
                 let inside = false;
@@ -184,13 +207,7 @@
                                 fillColor: 'blue',
                                 fillOpacity: 0.5
                             }).addTo(map);
-                            firLabels[prefix] = L.marker([centerLat, centerLon], {
-                                icon: L.divIcon({
-                                    className: 'fir-label',
-                                    html: prefix
-                                }),
-                                interactive:false
-                            }).addTo(map);
+                            firLabels[prefix] = addCenteredLabel(prefix,centerLat,centerLon);
                         });
 
                     });
