@@ -191,7 +191,6 @@ Q_INVOKABLE QVariantList PathProvider::getFirBounds(QString fir, QString cid) co
             bounds << center;
             query.prepare(QString("SELECT lat, lon FROM \"%1\"").arg(fir));
             query.exec();
-            qDebug() << "here";
             while(query.next()){
                 QVariantMap point;
                 point["lat"] = query.value(0).toDouble();
@@ -276,7 +275,6 @@ Q_INVOKABLE QVariantList PathProvider::getFirBounds(QString fir, QString cid) co
                 double maxLon = metaVal(6);
                 double centerLat = metaVal(7);
                 double centerLon = metaVal(8);
-                qDebug() << centerLon;
                 if(ctrlLat < minLat || ctrlLat > maxLat || ctrlLon < minLon || ctrlLon > maxLon)
                     continue;
                 QVector<QPair<double,double>> poly;
@@ -290,7 +288,6 @@ Q_INVOKABLE QVariantList PathProvider::getFirBounds(QString fir, QString cid) co
                     }
                 }
                 if(poly.size() < 3) continue;
-                qDebug() << candidate;
                 if(pointInPolygonWinding(ctrlLat, ctrlLon, poly)){
                     matchedFIR = candidate;
                     matchedCenter["lat"] = centerLat;
@@ -319,6 +316,7 @@ void PathProvider::loadAirportCache(){
     QFile f("VATSpy.dat");
     if(!f.open(QIODevice::ReadOnly | QIODevice::Text)){
         airportCacheLoaded = true;
+        qDebug() << "here";
         return;
     }
     QTextStream ts(&f);
@@ -333,6 +331,7 @@ void PathProvider::loadAirportCache(){
         QStringList parts = line.split('|');
         if(parts.size() < 4) continue;
         QString icao = parts[0].trimmed();
+        qDebug() << icao;
         double lat = parts[2].toDouble();
         double lon = parts[3].toDouble();
         if(!icao.isEmpty() && lat != 0.0) airportPosCache.insert(icao, {lat,lon});

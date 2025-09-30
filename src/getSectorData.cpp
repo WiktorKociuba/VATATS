@@ -32,40 +32,71 @@ void getSectorData::getFIRSectors(){
                 QFile::remove("FIRBoundaries.dat");
             if(QFile::exists("FIRData.sqlite"))
                 QFile::remove("FIRData.sqlite");
+            if(QFile::exists("VATSpy.dat"))
+                QFile::remove("VATSpy.dat");
             QJsonArray assets = obj["assets"].toArray();
-            QString downloadUrl;
+            QString downloadUrl, vatspyUrl;
             for(const QJsonValue& asset : assets){
                 QJsonObject assetObj = asset.toObject();
-                if(assetObj["name"].toString() == "FIRBoundaries.dat"){
+                QString name = assetObj["name"].toString();
+                if(name == "FIRBoundaries.dat"){
                     downloadUrl = assetObj["browser_download_url"].toString();
-                    break;
+                }
+                else if(name == "VATSpy.dat"){
+                    vatspyUrl = assetObj["browser_download_url"].toString();
                 }
             }
-            if(!downloadUrl.isEmpty()){
-                QUrl dataUrl(downloadUrl);
-                QNetworkRequest dataReq(dataUrl);
-                QObject::connect(manager, &QNetworkAccessManager::finished, [manager,this](QNetworkReply* dataReply){
-                    if(dataReply->url().toString().contains("FIRBoundaries.dat")){
-                        QByteArray data = dataReply->readAll();
-                        QFile file("FIRBoundaries.dat");
-                        if(file.open(QIODevice::WriteOnly)){
-                            file.write(data);
-                            file.close();
-                            this->decodeBoundaries("FIRBoundaries.dat");
-                        }
-                        dataReply->deleteLater();
-                        manager->deleteLater();
+            QString firUrl = downloadUrl;
+            QVector<QPair<QString,QString>> downloads;
+            if(!firUrl.isEmpty())
+                downloads.push_back({"FIRBoundaries.dat", firUrl});
+            if(!vatspyUrl.isEmpty())
+                downloads.push_back({"VATSpy.dat", vatspyUrl});
+            QNetworkAccessManager* filemanager = new QNetworkAccessManager();
+            int* remaining = new int(downloads.size());
+            QObject::connect(filemanager, &QNetworkAccessManager::finished, [this,filemanager,remaining](QNetworkReply* fr){
+                QString fname = fr->property("targetName").toString();
+                if(fname.isEmpty())
+                    fname = fr->url().fileName();
+                if(fr->error() == QNetworkReply::NoError){
+                    QByteArray data = fr->readAll();
+                    if(data.isEmpty()){
+                        qWarning() << "Empty file:" << fname;
                     }
+                    else{
+                        QFile out(fname);
+                        if(out.open(QIODevice::WriteOnly)){
+                            out.write(data);
+                            out.close();
+                            qInfo() << "saved" << fname << data.size() << "bytes";
+                            if(fname == "FIRBoundaries.dat"){
+                                this->decodeBoundaries(fname);
+                            }
+                        }
+                        else{
+                            qWarning() << "Cannot write:" << fname;
+                        }
+                    }
+                }
+                else{
+                    qWarning() << "Download error" << fname << fr->errorString();
+                }
+                fr->deleteLater();
+                (*remaining)--;
+                if(*remaining == 0){
+                    delete remaining;
+                    filemanager->deleteLater();
                     emit finished();
-                });
-                manager->get(dataReq);
-            }
-            else{
-                qWarning() << "FIRBoundaries.dat not found";
-                manager->deleteLater();
-            }
+                }
+            });
+        for(const auto& d : downloads){
+            QNetworkRequest fReq(QUrl(d.second));
+            QNetworkReply* r = filemanager->get(fReq);
+            r->setProperty("targetName", d.first);
         }
+    }
         reply->deleteLater();
+        manager->deleteLater();
     });
     manager->get(request);
 }
