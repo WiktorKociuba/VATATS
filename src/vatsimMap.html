@@ -81,7 +81,7 @@
                 gap: 4px;
                 justify-content: center;
                 flex-direction: row;
-                align-items: cetner;
+                align-items: center;
             }
             .airport-cluster .svc{
                 width: 16px;
@@ -106,6 +106,17 @@
             .svc-A{
                 background: #8e44ad;
             }
+            .airport-tooltip{
+                font-size: 11px;
+                line-height: 1.2;
+                text-align: left;
+            }
+            .atis-text{
+                font: 10px/1.2 monospace;
+                white-space: pre-line;
+                margin-top: 4px;
+                max-width: 230px;
+            }
         </style>
     </head>
     <body>
@@ -126,8 +137,38 @@
             const approachLabels = {};
             const airportServices = {};
             const airportMarkers = {};
-            const TEN_NM_METERS = 10*1852;
+            const atisStations = [];
+            const TEN_NM_METERS = 20*1852;
             const LABEL_NORTH_OFFSET_DEG = 0.07;
+            function escapeHtml(s){
+                return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+            }
+            function buildAirportTooltip(icao){
+                const data = airportServices[icao];
+                if(!data)
+                    return icao;
+                const order = ['D','G','T'];
+                let html = `<b>${icao}</b><br>`;
+                order.forEach(l=>{
+                    if(data[l] && data[l].length){
+                        html += `<span style="font-weight:600">${l}</span>:`;
+                        html += data[l].map(x=>x.callsign + " " + x.freq).join(", ") + "<br>";
+                    }
+                });
+                if(data.A && data.A.length){
+                    data.A.forEach((a,idx)=>{
+                        const codePart = a.code ? `(${escapeHtml(a.code)})` : "";
+                        html += `<span style="font-weight:600">ATIS</span>: ${escapeHtml(a.callsign)} ${escapeHtml(a.freq)}${codePart}<br>`;
+                        if(a.text){
+                            let t = a.text.replace(/\r/g,"");
+                            if(t.length > 1200) t = t.substring(0,1200)+"...";
+                            html += `<div class="atis-text">${escapeHtml(t)}</div>`;
+                        }
+                        if(idx < data.A.length-1) html += "<br>";
+                    })
+                }
+                return html;
+            }
             function clearATC(){
                 Object.keys(drawnFIRs).forEach(k=>{
                     map.removeLayer(drawnFIRs[k]);
@@ -167,20 +208,23 @@
                     const lblLat = alat + LABEL_NORTH_OFFSET_DEG;
                     const icon = L.divIcon({className:'approach-label', html: baseIcao + ' APP'});
                     const m = L.marker([lblLat, alon], {icon, interactive:true}).addTo(map);
+                    m.bindTooltip(
+                        `<b>${baseIcao} APP</b><br>${atc.callsign} ${atc.frequency}`,
+                        {direction:'top',sticky:true,opacity:0.95,className:'airport-tooltip'}
+                    );
                     requestAnimationFrame(()=>{
                         const el = m.getElement(); if(!el) return;
                         const w=el.offsetWidth;
                         const h=el.offsetHeight;
                         m.setIcon(L.divIcon({className:'approach-label', html:baseIcao + ' APP', iconSize:[w,h], iconAnchor:[w/2,h/2]}));
-
                     });
                     approachLabels[atc.callsign] = m;
                 });
             }
-            function addAirportServiceLetter(icao, letter, callsign, freq){
+            function addAirportServiceLetter(icao, letter, callsign, freq, code, text){
                 if(!airportServices[icao]) airportServices[icao] = {D:[],G:[],T:[],A:[]};
                 if(airportServices[icao][letter].some(e=>e.callsign===callsign)) return;
-                airportServices[icao][letter].push({callsign,freq});
+                airportServices[icao][letter].push({callsign,freq, code:code||"",text:text||""});
                 renderAirportServiceMarker(icao);
             }
             function renderAirportServiceMarker(icao){
@@ -214,6 +258,18 @@
                             const w=el.offsetWidth;
                             const h=el.offsetHeight;
                             airportMarkers[icao].setIcon(L.divIcon({html, className:'',iconSize:[w,h],iconAnchor:[w/2,h/2]}));
+                        });
+                    }
+                    const tip = buildAirportTooltip(icao);
+                    if(airportMarkers[icao].getTooltip()){
+                        airportMarkers[icao].getTooltip().setContent(tip);
+                    }
+                    else{
+                        airportMarkers[icao].bindTooltip(tip,{
+                            direction:'top',
+                            sticky:true,
+                            opacity:0.95,
+                            className:'airport-tooltip'
                         });
                     }
                 });
@@ -443,7 +499,7 @@
                             if(suffix !== 'ATIS')
                                 return;
                             const prefix = parts[0];
-                            addAirportServiceLetter(prefix,'A',A.callsign,A.frequency);
+                            addAirportServiceLetter(prefix,'A',A.callsign,A.frequency,A.atisCode,A.textAtis);
                         });
                     });
                 });

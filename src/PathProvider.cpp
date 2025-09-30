@@ -316,7 +316,6 @@ void PathProvider::loadAirportCache(){
     QFile f("VATSpy.dat");
     if(!f.open(QIODevice::ReadOnly | QIODevice::Text)){
         airportCacheLoaded = true;
-        qDebug() << "here";
         return;
     }
     QTextStream ts(&f);
@@ -331,7 +330,6 @@ void PathProvider::loadAirportCache(){
         QStringList parts = line.split('|');
         if(parts.size() < 4) continue;
         QString icao = parts[0].trimmed();
-        qDebug() << icao;
         double lat = parts[2].toDouble();
         double lon = parts[3].toDouble();
         if(!icao.isEmpty() && lat != 0.0) airportPosCache.insert(icao, {lat,lon});
@@ -348,6 +346,8 @@ QVariantList PathProvider::getVatsimAtis() const{
         m["callsign"] = a.callsign;
         m["frequency"] = a.freq;
         m["logonTime"] = a.logonTime;
+        m["atisCode"] = a.atisCode;
+        m["textAtis"] = a.textAtis;
         list.append(m);
     }
     return list;

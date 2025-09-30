@@ -16,6 +16,19 @@
 #include "tracking.h"
 #include "savePoints.h"
 
+auto joinTextAtis = [](const QJsonValue& v)->QString{
+    if(v.isArray()){
+        QStringList lines;
+        for(const QJsonValue& l : v.toArray()){
+            QString s = l.toString().trimmed();
+            if(!s.isEmpty()) lines << s;
+        }
+        return lines.join("\n");
+    }
+    if(v.isString()) return v.toString();
+    return QString();
+};
+
 void vatsimMap::getVatsimData(){
     QUrl url("https://data.vatsim.net/v3/vatsim-data.json");
     QNetworkRequest request(url);
@@ -89,7 +102,7 @@ void vatsimMap::getVatsimData(){
             QString rating = ATIS["rating"].toString();
             QString visualRange = ATIS["visual_range"].toString();
             QString atisCode = ATIS["atis_code"].toString();
-            QString textAtis = ATIS["text_atis"].toString();
+            QString textAtis = joinTextAtis(ATIS["text_atis"]);
             QString logonTime = ATIS["logon_time"].toString();
             g_currentAtisData.push_back({cid,name,callsign,freq,facility,rating,visualRange,atisCode,textAtis,logonTime});
         }
