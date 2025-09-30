@@ -11,6 +11,8 @@
 #include <QByteArray>
 #include <QJSValue>
 #include <QJSEngine>
+#include <QFile>
+#include <QTextStream>
 #include "globals.h"
 #include "vatsimMap.h"
 #include "readPoints.h"
@@ -18,6 +20,8 @@
 bool PathProvider::connectionOpen = false;
 QSqlDatabase PathProvider::db;
 QStringList PathProvider::firTables;
+bool PathProvider::airportCacheLoaded = false;
+QHash<QString,QPair<double,double>> PathProvider::airportPosCache;
 static int isLeft(double x0,double y0,double x1,double y1,double x2,double y2){
     double v = (x1 - x0)*(y2 - y0) - (x2 - x0)*(y1 - y0);
     if(v > 0) return 1;
@@ -309,4 +313,58 @@ Q_INVOKABLE QVariantList PathProvider::getFirBounds(QString fir, QString cid) co
         db.close();
     }
     return bounds;
+}
+void PathProvider::loadAirportCache(){
+    if(airportCacheLoaded) return;
+    QFile f("VATSpy.dat");
+    if(!f.open(QIODevice::ReadOnly | QIODevice::Text)){
+        airportCacheLoaded = true;
+        return;
+    }
+    QTextStream ts(&f);
+    bool inAirports = false;
+    while(!ts.atEnd()){
+        QString line = ts.readLine().trimmed();
+        if(line.startsWith('[')){
+            inAirports = (line == "[Airports]");
+            continue;
+        }
+        if(!inAirports || line.isEmpty() || line.startsWith(';')) continue;
+        QStringList parts = line.split('|');
+        if(parts.size() < 4) continue;
+        QString icao = parts[0].trimmed();
+        double lat = parts[2].toDouble();
+        double lon = parts[3].toDouble();
+        if(!icao.isEmpty() && lat != 0.0) airportPosCache.insert(icao, {lat,lon});
+    }
+    airportCacheLoaded = true;
+}
+
+QVariantList PathProvider::getVatsimAtis() const{
+    QVariantList list;
+    for(const auto& a : g_currentAtisData){
+        QVariantMap m;
+        m["cid"] = a.cid;
+        m["name"] = a.name;
+        m["callsign"] = a.callsign;
+        m["frequency"] = a.freq;
+        m["logonTime"] = a.logonTime;
+        list.append(m);
+    }
+    return list;
+}
+
+QVariantMap PathProvider::getAirportPos(const QString& icao) const{
+    QVariantMap r;
+    loadAirportCache();
+    QString key = icao.trimmed().toUpper();
+    if(airportPosCache.contains(key)){
+        r["ok"] = true;
+        r["lat"] = airportPosCache[key].first;
+        r["lon"] = airportPosCache[key].second;
+    }
+    else{
+        r["ok"] = false;
+    }
+    return r;
 }
