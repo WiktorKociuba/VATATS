@@ -1,5 +1,6 @@
 #pragma once
 #include <QObject>
+#include <QJSValue>
 #include <QVector>
 #include <QVariantList>
 #include <QSqlDatabase>
@@ -19,8 +20,10 @@ public:
     static void createFIRConnection();
 signals:
     void pathChanged();
+    void atcPosReceived(QString cid, QVariantMap position);
 private:
     QVector<QPair<double,double>> points;
     static bool connectionOpen;
     static QSqlDatabase db;
+    static QStringList firTables;
 };

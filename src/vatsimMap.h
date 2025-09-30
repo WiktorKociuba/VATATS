@@ -69,6 +69,7 @@ public:
         QString longName;
     };
     void requestData();
+    void getATCPos(QString cid, std::function<void(QVariantMap)> callback);
 signals:
     void newVatsimData();
 };

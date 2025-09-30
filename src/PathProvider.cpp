@@ -9,13 +9,29 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QByteArray>
+#include <QJSValue>
+#include <QJSEngine>
 #include "globals.h"
 #include "vatsimMap.h"
 #include "readPoints.h"
 
 bool PathProvider::connectionOpen = false;
 QSqlDatabase PathProvider::db;
-
+QStringList PathProvider::firTables;
+static bool pointInPolygon(double lat, double lon, const QVector<QPair<double,double>>& poly){
+    bool inside = false;
+    int n = poly.size();
+    for(int i = 0, j = n-1; i < n; j=i++){
+        double lat_i = poly[i].first;
+        double lon_i = poly[i].second;
+        double lat_j = poly[j].first;
+        double lon_j = poly[j].second;
+        bool intersect = ((lat_i > lat) != (lat_j > lat)) && (lon < (lon_j - lon_i) * (lat - lat_i) / ((lat_j - lat_i)==0 ? 1e-12 : (lat_j-lat_i)) + lon_i);
+        if(intersect) inside = !inside;
+    }
+    qDebug() << "is in? " << inside;
+    return inside;
+}
 QVariantList PathProvider::getPath() const {
     QVariantList path;
     for (const auto& pt : points)
@@ -169,19 +185,102 @@ Q_INVOKABLE QVariantList PathProvider::getFirBounds(QString fir, QString cid) co
         9	Center Lon	16.3	Center longitude of FIR
         */
         else{
+            if(cid.isEmpty()){
+                db.close();
+                return bounds;
+            }
+            double ctrlLat = 0.0;
+            double ctrlLon = 0.0;
             QUrl slurpapi(QString("https://slurper.vatsim.net/users/info?cid=%1").arg(cid));
             QNetworkRequest request(slurpapi);
             request.setRawHeader("Accept", "text/plain");
             QNetworkAccessManager* manager = new QNetworkAccessManager();
             QNetworkReply* reply = manager->get(request);
-            connect(reply, &QNetworkReply::finished, this, [reply, this](){
-                QByteArray raw = reply->readAll();
-                QString info = QString::fromUtf8(raw);
-                QStringList parts = info.split(',');
-                QString lat = parts.value(5);
-                QString lon = parts.value(6);
-                //QVector<QString> FIRNames = readPoints::getFIRMetaList();
-            });
+            QEventLoop loop;
+            connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+            loop.exec();
+            if(reply->error() == QNetworkReply::NoError){
+                QString txt = QString::fromUtf8(reply->readAll());
+                const QStringList lines = txt.split('\n', Qt::SkipEmptyParts);
+                for(const QString& line : lines){
+                    QStringList f = line.split(',');
+                    if(f[2] == "atc"){
+                        QString suffix = f[1].split('_').last();
+                        if(suffix == "CTR" || suffix == "FSS"){
+                            ctrlLat = f[5].toDouble();
+                            ctrlLon = f[6].toDouble();
+                            break;
+                        }
+                    }
+                }
+            }
+            else{
+                qWarning() << "Slurper error:" << reply->errorString();
+            }
+            reply->deleteLater();
+            if(firTables.isEmpty())
+            {
+                {
+                    QSqlQuery listQ(db);
+                    if(listQ.exec("SELECT name FROM sqlite_master WHERE type='table'")){
+                        while(listQ.next()){
+                            const QString name = listQ.value(0).toString();
+                            if(name.endsWith("_META")) continue;
+                            PathProvider::firTables.append(name);
+                        }
+                    }
+                }
+            }
+            QString matchedFIR;
+            QVariantMap matchedCenter;
+            QVector<QPair<double,double>> matchedPoly;
+            for(const QString& candidate : PathProvider::firTables){
+                auto metaVal = [&](int index)->double{
+                    QSqlQuery mq(db);
+                    mq.prepare(QString("SELECT data FROM \"%1\" WHERE id=:id LIMIT 1").arg(candidate + "_META"));
+                    mq.bindValue(":id", index);
+                    if(mq.exec() && mq.next()) return mq.value(0).toDouble();
+                    return 0.0;
+                };
+                double minLat = metaVal(3);
+                double minLon = metaVal(4);
+                double maxLat = metaVal(5);
+                double maxLon = metaVal(6);
+                double centerLat = metaVal(7);
+                double centerLon = metaVal(8);
+                qDebug() << centerLon;
+                if(ctrlLat < minLat || ctrlLat > maxLat || ctrlLon < minLon || ctrlLon > maxLon)
+                    continue;
+                QVector<QPair<double,double>> poly;
+                QSqlQuery pQ(db);
+                pQ.prepare(QString("SELECT lat, lon FROM \"%1\"").arg(candidate));
+                if(pQ.exec()){
+                    while(pQ.next()){
+                        double plat = pQ.value(0).toDouble();
+                        double plon = pQ.value(1).toDouble();
+                        poly.push_back({plat,plon});
+                    }
+                }
+                if(poly.size() < 3) continue;
+                qDebug() << candidate;
+                if(pointInPolygon(ctrlLat, ctrlLon, poly)){
+                    matchedFIR = candidate;
+                    matchedCenter["lat"] = centerLat;
+                    matchedCenter["lon"] = centerLon;
+                    matchedPoly = poly;
+                    break;
+                }
+            }
+            if(!matchedFIR.isEmpty()){
+                matchedCenter["fir"] = matchedFIR;
+                bounds << matchedCenter;
+                for(const auto& pr : matchedPoly){
+                    QVariantMap p;
+                    p["lat"] = pr.first;
+                    p["lon"] = pr.second;
+                    bounds << p;
+                }
+            }
         }
         db.close();
     }

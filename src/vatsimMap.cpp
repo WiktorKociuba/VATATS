@@ -68,7 +68,7 @@ void vatsimMap::getVatsimData(){
         (void)QtConcurrent::run(savePoints::saveSPPos, g_currentPilotData);
         for(const QJsonValue &value : controllers){
             QJsonObject ATC = value.toObject();
-            QString cid = ATC["cid"].toString();
+            QString cid = QString::number(ATC["cid"].toInt());
             QString name = ATC["name"].toString();
             QString callsign = ATC["callsign"].toString();
             QString freq = ATC["frequency"].toString();
@@ -151,6 +151,7 @@ void vatsimMap::getVatsimData(){
         reply->deleteLater();
     });
 }
+
 
 void vatsimMap::requestData(){
     connect(this, &vatsimMap::newVatsimData, this, [](){

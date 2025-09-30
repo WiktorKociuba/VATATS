@@ -29,6 +29,16 @@
                 z-index: 10000;
                 pointer-events: auto;
             }
+            .fir-label{
+                background: rgba(36, 0, 196, 0.437);
+                color: white;
+                padding: 2px 16px;
+                border-radius: 3px;
+                font-weight: bold;
+                text-align: left;
+                font-size: 12px;
+                border: none;
+            }
         </style>
     </head>
     <body>
@@ -43,6 +53,18 @@
             window.currentPolyline = null;
             window.clickedAircraft = null;
             window.currentLatlngs = [];
+            function isInPolygon(point, polygon){
+                const [x, y] = point
+                let inside = false;
+                for(let i = 0, j = polygon.length - 1; i < polygon.length; j = i++){
+                    const [xi, yi] = polygon[i];
+                    const [xj, yj] = polygon[j];
+                    if(((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)){
+                        inside = !inside;
+                    }
+                }
+                return inside;
+            }
             function showVatsimPlanes(planes){
                 window.vatsimMarkers.forEach(m => map.removeLayer(m));
                 window.vatsimMarkers = [];
@@ -131,25 +153,27 @@
                     sidebar.remove()
                 }
             })
+            let pendingControllers = new Map();
             let drawnFIRs = {};
             let firLabels = {};
+            let allFIRBounds = {};
             function showVatsimATC(){
-                var ATCList = [];
-                window.pathProvider.getVatsimControllers(function(ATCList){
+                window.pathProvider.getVatsimControllers().then(function(ATCList){
                     ATCList.forEach(function(ATC){
                         let parts = ATC.callsign.split("_");
                         let prefix = parts[0];
                         let suffix = parts[parts.length-1];
                         if(parts.length > 2){
                             for(let i = 1; i < parts.length-1; i++){
-                                prefix = prefix + "-" + parts[i]
+                                prefix = prefix + "-" + parts[i];
                             }
                         }
                         if(suffix != "CTR" && suffix != "FSS")
                             return;
                         if(drawnFIRs[prefix])
                             return;
-                        window.pathProvider.getFirBounds(prefix, ATC.cid, function(bounds){
+                        window.pathProvider.getFirBounds(prefix, ATC.cid).then(function(bounds){
+                            if(!bounds || bounds.length < 2) return;
                             const latlngs = bounds.map(pt=>[pt.lat,pt.lon]);
                             const centerLat = bounds[0].lat;
                             const centerLon = bounds[0].lon;
@@ -158,7 +182,7 @@
                                 color: 'blue',
                                 opacity: 0.8,
                                 fillColor: 'blue',
-                                fillOpacity: 0.3
+                                fillOpacity: 0.5
                             }).addTo(map);
                             firLabels[prefix] = L.marker([centerLat, centerLon], {
                                 icon: L.divIcon({
@@ -171,7 +195,6 @@
 
                     });
                 });
-                
             }
             new QWebChannel(qt.webChannelTransport, function(channel){
                 window.pathProvider = channel.objects.pathProvider;
