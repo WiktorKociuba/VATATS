@@ -3,14 +3,20 @@
 Virtual Aircraft Tracking And Toolbox System<br>
 App made for [**Summer of making**](https://summer.hackclub.com/).<br>
 VATATS contains useful features for MSFS flight simmers like:
-- Flight Tracking
-- Charts
-- CPDLC
-- VATSIM network map
+- [Flight Tracking](https://github.com/WiktorKociuba/VATATS?tab=readme-ov-file#flight-tracking)
+- [Charts](https://github.com/WiktorKociuba/VATATS?tab=readme-ov-file#charts)
+- [CPDLC](https://github.com/WiktorKociuba/VATATS?tab=readme-ov-file#cpdlc)
+- [VATSIM network map](https://github.com/WiktorKociuba/VATATS?tab=readme-ov-file#vatsim-map)
 
-## How to use?
-1) Download the newest [release](https://github.com/WiktorKociuba/VATATS/releases)
-2) Run **VATATS.exe**
+## Instalation:
+1) Download the newest installer from [release](https://github.com/WiktorKociuba/VATATS/releases)
+2) Run it and follow the instructions
+
+OR
+
+1) Download .7zip from the newest [release](https://github.com/WiktorKociuba/VATATS/releases)
+2) Unpack it
+3) Run **VATATS.exe**
 
 ## Module overview:
 ### Flight tracking:
