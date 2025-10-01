@@ -133,6 +133,7 @@ tracking::tracking(QWidget *parent)
         this->resizeEvent(event);
         delete event;
     });
+    tracking::populateSaveDD();
 }
 
 tracking::~tracking()
@@ -191,6 +192,7 @@ void tracking::onShowLastClicked(){
         result.push_back({std::get<0>(points[i]),std::get<1>(points[i])});
         altitude.push_back(std::get<2>(points[i]));
     }
+    mapView->page()->runJavaScript("resetMapCentering();");
     flightTrackingPage::displayPastRoute(result);
     tracking::showHeightProfile(altitude);
 }
@@ -201,6 +203,7 @@ void tracking::onStartTrackingClicked(){
     ui->showLastPB->setEnabled(false);
     initialized = false;
     wasOnGround = TRUE;
+    mapView->page()->runJavaScript("resetMapCentering();");
     flightTrackingPage::startTracking(g_mainWindow);
 }
 
@@ -236,6 +239,7 @@ void tracking::onHoppieDisconnectClicked(){
 }
 
 void tracking::onClearMapClicked(){
+    mapView->page()->runJavaScript("resetMapCentering();");
     g_mainWindow->pathProvider->setPoints({});
     tracking::showHeightProfile({});
     ui->landingSpeedLabel->setText("");
