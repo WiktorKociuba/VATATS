@@ -1,5 +1,11 @@
 # VATATS
-Virtual Aircraft Tracking And Toolbox System
+Virtual Aircraft Tracking And Toolbox System<br>
+App made for [**Summer of making**](https://summer.hackclub.com/).<br>
+VATATS contains useful features for MSFS flight simmers like:
+- Flight Tracking
+- Charts
+- CPDLC
+- VATSIM network map
 
 ## How to use?
 1) Download the newest [release](https://github.com/WiktorKociuba/VATATS/releases)
@@ -68,13 +74,13 @@ Available Info requests (click Inforeq, fill the ICAO and click send on desired 
 ###  VATSIM map:
 It is a map of current live data from VATSIM network.<br>
 To get aircraft callsign, you can hover on the icon. To get more data (including saved route), click on it.<br>
-![Plane Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/plane.png)
+![Plane Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/plane.png)<br>
 CTR/FSS active areas are displayed with blue polygons. To view more data, hover on the label.<br>
 ![CTR Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/fir.png)<br>
 Active APP/DEP areas are shown as a circle. Hover on the label to get more info.<br>
-![APP Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/app.png)
+![APP Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/app.png)<br>
 Active DEL/GND/TWR/ATIS positions are displayed with labels above the airports, hover on the label to get more data.<br>
-![ATIS Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/atis.png)
+![ATIS Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/atis.png)<br>
 ### Settings:
 Use it to provide:
 - Simconnect IP and port
