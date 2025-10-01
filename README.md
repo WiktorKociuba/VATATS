@@ -56,6 +56,7 @@ Available CPDLC requests:
 
 Available TELEX messages:
 - Free text
+
 Available Info requests (click Inforeq, fill the ICAO and click send on desired position):<br>
 - METAR
 - TAF
