@@ -67,10 +67,12 @@ Available Info requests (click Inforeq, fill the ICAO and click send on desired 
 - VATSIM ATIS
 ###  VATSIM map:
 It is a map of current live data from VATSIM network.<br>
-To get aircraft callsign, you can hover on the icon. To get more data, click on it.<br>
+To get aircraft callsign, you can hover on the icon. To get more data (including saved route), click on it.<br>
+![Plane Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/plane.png)
 CTR/FSS active areas are displayed with blue polygons. To view more data, hover on the label.<br>
-![CTR Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/fir.png)
+![CTR Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/fir.png)<br>
 Active APP/DEP areas are shown as a circle. Hover on the label to get more info.<br>
+![APP Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/app.png)
 Active DEL/GND/TWR/ATIS positions are displayed with labels above the airports, hover on the label to get more data.<br>
 ![ATIS Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/atis.png)
 ### Settings:
