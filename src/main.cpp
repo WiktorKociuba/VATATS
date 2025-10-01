@@ -30,6 +30,7 @@ bool ifVatsim;
 
 int main(int argc, char** argv){
     QApplication app(argc,argv);
+    app.setWindowIcon(QIcon(":/icons/vatatsIcon.ico"));
     pointTimes = {};
     g_currentCharts = {};
     g_messages = {};

@@ -1,3 +1,4 @@
+![VATATS banner (png)](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/bannerVatats.png)
 # VATATS
 Virtual Aircraft Tracking And Toolbox System<br>
 App made for [**Summer of making**](https://summer.hackclub.com/).<br>
@@ -13,7 +14,7 @@ VATATS contains useful features for MSFS flight simmers like:
 
 ## Module overview:
 ### Flight tracking:
-![Tracking Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/demo.gif)
+![Tracking Demo (gif)](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/demo.gif)
 To track your flghts, you either need to run msfs locally, or run it on a different machine (you can findinstructions on how to setup Simconnect over internet in the "settings" tab).<br>
 To start tracking the flight you need to click "Start Tracking" and to end it "Stop Tracking".<br>
 From the dropdown you can select saves, that can be displayed with clicking "Show Last Flight" after selection.<br>
@@ -22,12 +23,12 @@ Map shows current flight or one of the loaded saves.<br>
 Chart below the map shows altitude AGL.<br>
 ### Charts:
 **To use this module, you first need to authorize with ChartFox from settings (just click the button and login)**<br>
-![Charts demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/charts.png)
+![Charts demo (png)](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/charts.png)
 On the top there is an input line, fill it in with ICAO airport code and click search - if the charts are available, the list will show up on the left.<br>
 To display a chart, click on it from the list and you can view it on the right (you can also zoom in and out)<br>
 ### CPDLC:
 **To use CPDLC on VATSIM network, you need to get a Hoppie secret (register [here](https://www.hoppie.nl/acars/system/register.html)), you also need to put your VATSIM CID. You can fill it in the settings**<br>
-![CPDLC Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/cpdlc.png)
+![CPDLC Demo (png)](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/cpdlc.png)
 Connect/Disconnect from Hoppie using corresponding buttons.<br>
 Callsign will show you your current callsign, current station - the station that you are currently connected to.<br>
 Click Predep to fill in the predeparture clearance (PDC).<br>
@@ -74,13 +75,13 @@ Available Info requests (click Inforeq, fill the ICAO and click send on desired 
 ###  VATSIM map:
 It is a map of current live data from VATSIM network.<br>
 To get aircraft callsign, you can hover on the icon. To get more data (including saved route), click on it.<br>
-![Plane Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/plane.png)<br>
+![Plane Demo (png)](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/plane.png)<br>
 CTR/FSS active areas are displayed with blue polygons. To view more data, hover on the label.<br>
-![CTR Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/fir.png)<br>
+![CTR Demo (png)](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/fir.png)<br>
 Active APP/DEP areas are shown as a circle. Hover on the label to get more info.<br>
-![APP Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/app.png)<br>
+![APP Demo (png)](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/app.png)<br>
 Active DEL/GND/TWR/ATIS positions are displayed with labels above the airports, hover on the label to get more data.<br>
-![ATIS Demo](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/atis.png)<br>
+![ATIS Demo (png)](https://github.com/WiktorKociuba/VATATS/blob/main/readmeFiles/atis.png)<br>
 ### Settings:
 Use it to provide:
 - Simconnect IP and port

@@ -37,3 +37,5 @@ FORMS += \
     src/predepgui.ui \
     src/telexdialog.ui \
     tracking.ui
+
+RC_ICONS = icons/vatatsIcon.ico
